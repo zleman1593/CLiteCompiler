@@ -1,6 +1,7 @@
 /* C-Lite Compiler written  by Zackery Leman 2014
  */
 
+//TODO: What should I so about the single quotations for char literals?
 import java.util.ArrayList;
 import java.io.FileInputStream;
 import java.util.Map;
@@ -70,56 +71,23 @@ public class LexicalParser {
 		for(int i = 0; i < tokens.length; i++){
 			ArrayList<String> tempAddTokenAndClassifier = new ArrayList<String>();
 			//Takes care of case when there is no space between last lexeme in the line and ending semicolon
-			if(tokens[i].charAt(tokens[i].length() - 1) == ';'){
-				//Get the Token type for the lexeme
-				String classifier = (String) tokenDef.get(tokens[i].substring(0, tokens[i].length() - 1));
-				/*If the token type doesn't match one in the dictionary parse it to identify
-				what Token it is by which pattern it matches given the remaining possibilities*/
-				if(classifier == null){
-					classifier = regex(tokens[i].substring(0, tokens[i].length() - 1));
-				}
-
-				tempAddTokenAndClassifier.add(classifier);
-				//If lexme is a comment add the comment back, if not, add the lexeme
-				if (classifier.equals("comment")){
-					tempAddTokenAndClassifier.add(comments.remove(0));
-				} else if (classifier.equals("charLiteral")){  //Strips away ''
-					tempAddTokenAndClassifier.add(tokens[i].substring(1, 2));
-				}
-				else
-				{
-					tempAddTokenAndClassifier.add(tokens[i].substring(0, tokens[i].length() - 1));
-				}
-
-				finishedTokens.add(tempAddTokenAndClassifier);
-
-				//Now add the semicolon lexeme
-				tempAddTokenAndClassifier = new ArrayList<String>();
-				tempAddTokenAndClassifier.add(";");
-				tempAddTokenAndClassifier.add(";");
-				finishedTokens.add(tempAddTokenAndClassifier);
-
-			} else{
 				/*If the token type doesn't match one in the dictionary parse it to identify
 				what Token it is by which pattern it matches given the remaining possibilities*/
 				String classifier = (String) tokenDef.get(tokens[i]);
-				if(classifier == null){
+				
+				if (classifier == null){
 					classifier = regex(tokens[i]);
-				}
-				//If lexme is a comment add the comment back, if not, add the lexeme
-				if (classifier.equals("comment")){
+				} else if (classifier.equals("comment")){
+					//If lexme is a comment add the comment back, if not, add the lexeme
 					tokens[i] = comments.remove(0);
-				}
-				//Strips away ''
+				} 
 				if (classifier.equals("charLiteral")){
+					//Strips away ''
 					tokens[i] = tokens[i].substring(1, 2);
 				}
-
-
 				tempAddTokenAndClassifier.add(classifier);
 				tempAddTokenAndClassifier.add(tokens[i]);
 				finishedTokens.add(tempAddTokenAndClassifier);
-			}
 
 		}
 		return finishedTokens;
@@ -188,15 +156,13 @@ public class LexicalParser {
 		tokenDef.put(";",";");
 		tokenDef.put("true", "boolLiteral");
 		tokenDef.put("false","boolLiteral");
-		
 		tokenDef.put("==","equOp");
 		tokenDef.put("!=","equOp");
 		tokenDef.put("<","relOp");
 		tokenDef.put("<=","relOp");
 		tokenDef.put(">","relOp");
 		tokenDef.put(">=","relOp");
-		
-		
+		tokenDef.put("=","assignOp");
 		tokenDef.put("if","if");
 		tokenDef.put("else","else");
 		tokenDef.put("while","while");
@@ -213,29 +179,14 @@ public class LexicalParser {
 		tokenDef.put("return","return");
 		tokenDef.put("print","print");
 		tokenDef.put("#comment","comment");
-		
-		
-		tokenDef.put("=","assignOp");
-
 	}
 	
-	
-	
+	/*This finds all lexemes that may be adjoined to a neighboring lexeme
+	 * and adds a space in between them so that the rest of the parsing can work*/
 	private String addSpaces(String goodSpacing){
 		ArrayList<String> spaceBuffer = new ArrayList<String>();
-		spaceBuffer.add("main");
-		spaceBuffer.add("bool");
-		spaceBuffer.add("char");	  
-		spaceBuffer.add("float");
-		spaceBuffer.add("true");
-		spaceBuffer.add("false");
-		spaceBuffer.add("if");
-		spaceBuffer.add("else");
-		spaceBuffer.add("while");
 		spaceBuffer.add("}");
 		spaceBuffer.add("]");
-		spaceBuffer.add("return");
-		spaceBuffer.add("print");
 		spaceBuffer.add("<=");
 		spaceBuffer.add("!=");
 		spaceBuffer.add("-");
@@ -249,18 +200,32 @@ public class LexicalParser {
 		spaceBuffer.add("\\(");
 		spaceBuffer.add("\\)");
 		spaceBuffer.add("\\{");
-		//There is no benefit to including these
-		/*spaceBuffer.add(";");
-		spaceBuffer.add("//comment");
-		spaceBufferBefore.add("int");*/
+		spaceBuffer.add(";");
+		
+		goodSpacing = goodSpacing.replaceAll("(((?<!=)(?<!<)(?<!>))=(?!=))"," "+"="+ " ");
+		goodSpacing = goodSpacing.replaceAll("<(?!=)"," "+"<"+ " ");
+		goodSpacing = goodSpacing.replaceAll(">(?!=)"," "+">"+ " ");
+		
 		for (int i = 0; i < spaceBuffer.size(); i++){
 			goodSpacing = goodSpacing.replaceAll(spaceBuffer.get(i),  " "+spaceBuffer.get(i)+ " ");
 		}
-		//-----------------FIX TEH ISSUE SO THAT THERE CAN BE NO SPACES AROUND =
-			//goodSpacing2 = goodSpacing2.replaceAll("(?<!=)=(?!=)"," "+"="+ " ");
-			goodSpacing = goodSpacing.replaceAll("<(?!=)",  " "+"<"+ " ");
-			goodSpacing = goodSpacing.replaceAll(">(?!=)",  " "+">"+ " ");
 		return goodSpacing;
 	}
 }
 
+
+//There is no benefit to including these
+		/*spaceBuffer.add("//comment");
+		 spaceBuffer.add("true");
+		spaceBuffer.add("false");
+		spaceBuffer.add("if");
+		spaceBuffer.add("else");
+		spaceBuffer.add("while");
+		spaceBuffer.add("return");
+		spaceBuffer.add("print");
+		spaceBufferBefore.add("int");
+		spaceBuffer.add("main");
+		spaceBuffer.add("bool");
+		spaceBuffer.add("char");	  
+		spaceBuffer.add("float");*/
+		
