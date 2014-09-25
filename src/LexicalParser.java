@@ -2,16 +2,13 @@
  */
 
 //TODO: What should I so about the single quotations for char literals?
-//TODO: Make output save in same directory  as input.
 import java.util.ArrayList;
-import java.io.FileInputStream;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -71,11 +68,12 @@ public class LexicalParser {
 		//For all lexemes
 		for(int i = 0; i < tokens.length; i++){
 			ArrayList<String> tempAddTokenAndClassifier = new ArrayList<String>();
-				/*If the token type doesn't match one in the dictionary parse it to identify
-				what Token it is by which pattern it matches given the remaining possibilities*/
+				
 				String classifier = (String) tokenDef.get(tokens[i]);
 				
 				if (classifier == null){
+					/*If the token type doesn't match one in the dictionary parse it to identify
+					what Token it is by which pattern it matches given the remaining possibilities*/
 					classifier = regex(tokens[i]);
 				} else if (classifier.equals("comment")){
 					//If lexme is a comment add the comment back, if not, add the lexeme
@@ -124,17 +122,14 @@ public class LexicalParser {
 	/*Utility method to print the results of lexeme Token classification to the console an save them to a file*/
 	public void print() throws IOException{
 		
-		Path outPutPath = Paths.get(fileDirectory);
-		String outPut = outPutPath.getParent().toString();
+		String outPut = Paths.get(fileDirectory).getParent().toString();
 		System.out.println("Output saved in: " + outPut);
-		BufferedWriter outputWriter = null;
 		File file = new File(outPut+"/LexicalOutput.txt");
 		// If file does not exists, then create it.
 		if (!file.exists()) {
 				file.createNewFile();
 		}
-		outputWriter = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
-	
+		BufferedWriter outputWriter = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
 		System.out.printf("Tokens          Lexemes\n");
 		outputWriter.write("Tokens          Lexemes\n");
 		outputWriter.write("\n");
@@ -144,7 +139,6 @@ public class LexicalParser {
 			for( int j = 0; j <= ( 10 - tokens.get(i).get(0).length()); j++){
 				spaces += ' ';	
 			}
-			
 			outputWriter.write(tokens.get(i).get(0) + spaces +tokens.get(i).get(1));
 			outputWriter.newLine();
 			System.out.printf(" %s %s%s\n", tokens.get(i).get(0), spaces, tokens.get(i).get(1)); 
@@ -155,7 +149,7 @@ public class LexicalParser {
 		
 	}
 	
-	/*Utility method to print the results of  Tokens in a line*/
+	/*Utility method to print the results of Tokens in an easily readable line*/
 	public void printLine(){
 		for (int i = 0; i < tokens.size(); ++i){	
 			System.out.printf(" %s ", tokens.get(i).get(0)); 
@@ -200,7 +194,7 @@ public class LexicalParser {
 		tokenDef.put("print","print");
 		tokenDef.put("#comment","comment");
 	}
-	/*This finds all lexemes that may be adjoined to a neighboring lexeme
+	/*This finds all lexemes that may be joined to a neighboring lexeme
 	 * and adds a space in between them so that the rest of the parsing can work*/
 	private String addSpaces(String goodSpacing){
 		ArrayList<String> spaceBuffer = new ArrayList<String>();
