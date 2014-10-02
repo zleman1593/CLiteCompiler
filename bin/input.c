@@ -1,7 +1,1 @@
-int main
-{
- int x = 0;
- x = x + 10;
- print x;
- return x;
-}
+x = 10 +5*2;

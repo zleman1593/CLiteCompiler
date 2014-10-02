@@ -1,7 +1,1 @@
-int main
-{
- int x = 0;
- x = x + 10;
- print x;
- return x;
-}
+qwert123 = ((9/3 == 3) + 21**3-2);

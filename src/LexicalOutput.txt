@@ -1,0 +1,21 @@
+Tokens          Lexemes
+
+id          qwert123
+assignOp    =
+(           (
+(           (
+intLiteral  9
+multOp      /
+intLiteral  3
+equOp       ==
+intLiteral  3
+)           )
+addOp       +
+intLiteral  21
+multOp      *
+multOp      *
+intLiteral  3
+addOp       -
+intLiteral  2
+)           )
+;           ;

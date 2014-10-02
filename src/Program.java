@@ -13,7 +13,7 @@ public class Program {
 		//Can either take a command line argument or use direct input in source code
 		if(args.length == 0){
 			//Defaults here if no command line argument is provided
-			parser.start("/Users/zackleman/Downloads/input.c");
+			parser.start("/Users/zackleman/Documents/workspace/CLiteCompiler1/src/input.c");
 		} else{
 			parser.start(args[0]);
 		}
@@ -21,7 +21,11 @@ public class Program {
 		System.out.println("Running Time: " + runTime/1000000 + " ms");
 		parser.print();
 		parser.printLine();
-		//ArrayList<ArrayList<String>> tokens = parser.tokens;
+		ArrayList<ArrayList<String>> tokens = parser.tokens;
+		SyntacticAnalysis syntax = new SyntacticAnalysis();
+		syntax.getTokens(tokens);
+		syntax.verifySyntax();
+		syntax.print();
 	}
 
 }

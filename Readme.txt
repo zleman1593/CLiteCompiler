@@ -21,3 +21,6 @@ If using the Command Line:——————————————————
 
 (If needed recompile Program.java)
 
+
+ONE ASSUMPTION: that after a one line comment that a new line is made (so that there is a newline character)
+
