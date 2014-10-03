@@ -24,3 +24,32 @@ If using the Command Line:——————————————————
 
 ONE ASSUMPTION: that after a one line comment that a new line is made (so that there is a newline character)
 
+
+if( currentTokenindex < tokens.size()  && !error){
+
+			if (tokens.get(currentTokenindex).equals("if")){
+				currentTokenindex++;
+
+				if (tokens.get(currentTokenindex).equals("(")){
+					currentTokenindex++;
+					Expression();
+					if (tokens.get(currentTokenindex).equals(")")){
+						currentTokenindex++;
+						Statement();//TODO: Should this be statements?---------------------------------------------------------------------------
+
+
+						if(currentTokenindex < tokens.size() ){
+							//else clause
+							if (tokens.get(currentTokenindex).equals("else")){
+								currentTokenindex++;
+								error = false;
+								Statement();
+							}
+						}
+					}
+
+				}
+
+			}
+		}
+

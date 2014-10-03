@@ -15,6 +15,7 @@ import java.io.FileWriter;
 import java.io.File;
 
 public class LexicalParser {
+	public String outPutPath;
 	//Stores the classified Tokens
 	public ArrayList<ArrayList<String>> tokens = new ArrayList<ArrayList<String>>();
 	//Stores all the information needed to classify tokens
@@ -55,9 +56,9 @@ public class LexicalParser {
 		//Removes the newline symbol from the document before further parsing 
 		String newLineReplacedString = commentReplacedString.replaceAll("\\n *", " ");
 		//This line take care of multiple spaces
-		String spacedString = addSpaces(newLineReplacedString).replaceAll("    ", " ").replaceAll("   ", " ").replaceAll("  ", " ");
+		String spacedString = addSpaces(newLineReplacedString);
 		//Divides the document into individual lexemes based on spaces between lexemes
-		String[] tokens = spacedString.split(" ");
+		String[] tokens = spacedString.split("\\s+");
 		return tokens;
 	}
 
@@ -68,9 +69,7 @@ public class LexicalParser {
 		//For all lexemes
 		for(int i = 0; i < tokens.length; i++){
 			ArrayList<String> tempAddTokenAndClassifier = new ArrayList<String>();
-				
 				String classifier = (String) tokenDef.get(tokens[i]);
-				
 				if (classifier == null){
 					/*If the token type doesn't match one in the dictionary parse it to identify
 					what Token it is by which pattern it matches given the remaining possibilities*/
@@ -122,9 +121,9 @@ public class LexicalParser {
 	/*Utility method to print the results of lexeme Token classification to the console an save them to a file*/
 	public void print() throws IOException{
 		
-		String outPut = Paths.get(fileDirectory).getParent().toString();
-		System.out.println("Output saved in: " + outPut);
-		File file = new File(outPut+"/LexicalOutput.txt");
+		 outPutPath = Paths.get(fileDirectory).getParent().toString();
+		System.out.println("Output saved in: " + outPutPath);
+		File file = new File(outPutPath+"/LexicalOutput.txt");
 		// If file does not exists, then create it.
 		if (!file.exists()) {
 				file.createNewFile();
@@ -193,6 +192,8 @@ public class LexicalParser {
 		tokenDef.put("return","return");
 		tokenDef.put("print","print");
 		tokenDef.put("#comment","comment");
+		tokenDef.put("||","||");
+		tokenDef.put("&&","&&");
 	}
 	/*This finds all lexemes that may be joined to a neighboring lexeme
 	 * and adds a space in between them so that the rest of the parsing can work*/
@@ -206,6 +207,8 @@ public class LexicalParser {
 		spaceBuffer.add("==");
 		spaceBuffer.add(">=");
 		spaceBuffer.add("/");
+		//spaceBuffer.add("||");
+		//spaceBuffer.add("&&");
 		//Need to escape these
 		spaceBuffer.add("\\+");
 		spaceBuffer.add("\\*");
