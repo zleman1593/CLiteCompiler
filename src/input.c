@@ -4,20 +4,18 @@ int x;
 bool n;
 float yes;
 int r;
-if (32-10<x)
-print nter;
-n = 12;
+if (true == n)
+	print yes;
+n = r;
 print false;
-if (n==12)
-return 56;
-else
-print 1234+98;
-n = 12;
-return 56;
-n = 12;
-while(23.23<= (2+5*5))
-while(23.23<= (2+5*5))
+if (24 > n)//What is this???
+	print n;
+while(true)
+	n = n + 1;
+if (32-10<x || xcv < ety)
+	x = 10;
+	r = 12;
+	print x + r;
 
-
-
+return x;
 }

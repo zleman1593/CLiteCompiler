@@ -26,10 +26,13 @@ public class Program {
 		
 		SyntacticAnalysis syntax = new SyntacticAnalysis();
 		
-		//syntax.getTokensFromLexer(tokens);
+		syntax.getTokensFromLexer(tokens);
 		//OR
-		syntax.getTokensFromFile(parser.outPutPath +"/LexicalOutput.txt");
-		//syntax.getTokensFromFile("/Users/zackleman/Documents/workspace/CLiteCompiler1/src" +"/LexicalOutput.txt");
+		// The program can also write to a file and then read it in. If this is what you want then comment out the above line and uncomment the below line
+		//syntax.getTokensFromFile(parser.outPutPath +"/LexicalOutput.txt");
+		
+	//TO LOAD LEXED FILE
+		//syntax.getTokensFromFile(args[0]);
 		
 		
 		syntax.verifySyntax();

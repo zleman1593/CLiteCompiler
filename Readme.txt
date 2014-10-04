@@ -22,34 +22,18 @@ If using the Command Line:——————————————————
 (If needed recompile Program.java)
 
 
-ONE ASSUMPTION: that after a one line comment that a new line is made (so that there is a newline character)
+ONE ASSUMPTION for the Lexer: That after a one line comment that a new line is made (so that there is a newline character)
 
 
-if( currentTokenindex < tokens.size()  && !error){
 
-			if (tokens.get(currentTokenindex).equals("if")){
-				currentTokenindex++;
-
-				if (tokens.get(currentTokenindex).equals("(")){
-					currentTokenindex++;
-					Expression();
-					if (tokens.get(currentTokenindex).equals(")")){
-						currentTokenindex++;
-						Statement();//TODO: Should this be statements?---------------------------------------------------------------------------
+IF you are trying to  load an already lexically processed file for syntactical analysis, then:
+ 1. Uncomment the line in the program class labeled with: //TO LOAD LEXED FILE
+ 
+ 2. Comment out all the code above where the syntacic analyzer class is declared.
+ 
+ 3.Run the from the command line after compiling with the single argument being the location of the lexed file 
+ 
+ 
 
 
-						if(currentTokenindex < tokens.size() ){
-							//else clause
-							if (tokens.get(currentTokenindex).equals("else")){
-								currentTokenindex++;
-								error = false;
-								Statement();
-							}
-						}
-					}
-
-				}
-
-			}
-		}
 

@@ -1,7 +1,6 @@
 /* C-Lite Compiler written  by Zackery Leman 2014
  */
 
-//TODO: What should I so about the single quotations for char literals?
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -207,8 +206,8 @@ public class LexicalParser {
 		spaceBuffer.add("==");
 		spaceBuffer.add(">=");
 		spaceBuffer.add("/");
-		//spaceBuffer.add("||");
-		//spaceBuffer.add("&&");
+		spaceBuffer.add("\\|\\|");
+		spaceBuffer.add("&&");
 		//Need to escape these
 		spaceBuffer.add("\\+");
 		spaceBuffer.add("\\*");
