@@ -90,21 +90,27 @@ public class SyntacticAnalysis {
 				errorMissingSyntax();
 			}
 			else{
+				//Tells program to terminate
+				if(tokens.get(currentTokenindex).equals("}")){
+					currentTokenindex++;
+				return true;
+				}
+				
 				/*If one of the statements is satisfied by the current string of tokens
 				 *it skips over the rest of the other statements and starts from the top again.
 				 *This prevents the assignment statement from running on a statement
 				 *that is valid, but not an assignment statement (and throwing an error for not matching an assignment).*/ 
 				startFromTop = PrintStmt();
-				if(!startFromTop){
+				if(!startFromTop && !error){
 					startFromTop = IfStatement();
 				}
-				if(!startFromTop){
+				if(!startFromTop && !error){
 					startFromTop = WhileStmt();
 				}
-				if(!startFromTop){
+				if(!startFromTop && !error){
 					startFromTop = ReturnStmt();
 				}
-				if(!startFromTop){
+				if(!startFromTop && !error){
 					Assignment();
 				}
 			}
@@ -113,7 +119,7 @@ public class SyntacticAnalysis {
 	}
 
 	private boolean  PrintStmt(){
-		if( currentTokenindex < tokens.size()){// && !error){
+		if( currentTokenindex < tokens.size()){
 			if (tokens.get(currentTokenindex).equals("print")){
 				currentTokenindex++;
 				Expression();
@@ -125,19 +131,14 @@ public class SyntacticAnalysis {
 	}
 
 	private boolean IfStatement(){
-		if( currentTokenindex < tokens.size()  && !error){
+		if( currentTokenindex < tokens.size()){
 			String required[];
 			required = new String[] {"if","(",")",};
 			for(int i = 0;i < required.length ;i++){
 				if(tokens.get(currentTokenindex).equals(required[i])){
 					currentTokenindex++;//consumes a token
 					if(i ==  1 ){
-						int current = currentTokenindex;
 						Expression();
-						//checks to make sure the was a valid expression
-						if(current == currentTokenindex){
-							error();
-						}
 					}if(i == 2 ){
 						Statement();
 						if(currentTokenindex < tokens.size() ){
@@ -155,17 +156,13 @@ public class SyntacticAnalysis {
 					}
 					return true;
 				}
-
 			} 
-
 		}
-
 		return false;
 	}
 
 
 	private boolean WhileStmt(){
-
 		if( currentTokenindex < tokens.size()){
 			if (tokens.get(currentTokenindex).equals("while")){
 				currentTokenindex++;
@@ -174,38 +171,33 @@ public class SyntacticAnalysis {
 					Expression();
 					if (tokens.get(currentTokenindex).equals(")")){
 						currentTokenindex++;
-
+						int current = currentTokenindex;
 						Statement();
-						if (tokens.get(currentTokenindex-1).equals("}")){
-							error();
-						}
+						//checks to make sure there was a valid statement
+						if(current == currentTokenindex){ error();}
 					}else{error();}
-
 				}else{error();}
 				return true;
 			}
-
 		}
 		return false;
 	}
 
 	private boolean ReturnStmt(){
-		if( currentTokenindex < tokens.size() && !error){
+		if( currentTokenindex < tokens.size()){
 			if (tokens.get(currentTokenindex).equals("return")){
 				currentTokenindex++;
-
 				Expression();
 				semiColon();
 				return true;
 			}
-
 		}
 		return false;
 	}
 
 
 	private void Assignment(){
-		if( currentTokenindex < tokens.size()){
+		if(currentTokenindex < tokens.size()){
 			id();
 			assignOp();
 			Expression();
@@ -218,7 +210,7 @@ public class SyntacticAnalysis {
 			currentTokenindex++;//consumes a token
 			return;
 		}else{
-			error();//errorSemi();
+			error();
 		}
 	}
 
@@ -242,10 +234,15 @@ public class SyntacticAnalysis {
 
 
 	private void Expression(){
+		int current = currentTokenindex;
 		Conjunction();
 		while(tokens.get(currentTokenindex).equals("||") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
 			Conjunction();
+		}
+		//Makes sure that when this is called that it raises an error if there is no expression 
+		if(current == currentTokenindex){
+			error();
 		}
 
 	}
@@ -264,7 +261,6 @@ public class SyntacticAnalysis {
 			currentTokenindex++;//consumes a token
 			Relation();
 		}
-
 	}
 
 
@@ -274,7 +270,6 @@ public class SyntacticAnalysis {
 			currentTokenindex++;//consumes a token
 			Addition();
 		}
-
 	}
 
 
@@ -284,7 +279,6 @@ public class SyntacticAnalysis {
 			currentTokenindex++;//consumes a token
 			Term();
 		}
-
 	}
 
 
@@ -311,15 +305,10 @@ public class SyntacticAnalysis {
 			Expression();
 			if(tokens.get(currentTokenindex).equals(")")){
 				currentTokenindex++;
-
-				return;
 			}else{
 				error();
 			}
-
-
 		}
-
 	}
 
 	private void print(){

@@ -79,12 +79,6 @@ id          x
 addOp       +
 id          r
 ;           ;
-id          sd
-assignOp    =
-(           (
-intLiteral  67
-)           )
-;           ;
 return      return
 id          x
 ;           ;
