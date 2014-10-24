@@ -54,8 +54,6 @@ assignOp    =
 id          r
 addOp       +
 floatLiteral 12.1
-addOp       +
-id          lol
 ;           ;
 return      return
 id          x

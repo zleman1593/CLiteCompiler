@@ -6,7 +6,7 @@ public Object value;
 public Heterogeneous(String type){//, Object value){
 
 this.type = type;
-this.value = value; 
+this.value = 0;//Todo 
 
 }
 

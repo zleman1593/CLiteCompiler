@@ -225,9 +225,9 @@ public class SyntacticAnalysis {
 		int convertFrom = 0;
 		int convertTo = 0;
 		if(currentTokenindex < tokens.size()){
-			convertTo = id();
+			convertTo = id().maxType;
 			assignOp();
-			convertFrom = Expression();
+			convertFrom = Expression().maxType;
 			if(convertTo == 4 &&  convertFrom != 4){
 				semanticError("Narrowing Conversion is not allowed");
 			} else if (convertTo == 5 &&  convertFrom !=  5){
@@ -250,7 +250,7 @@ public class SyntacticAnalysis {
 		}
 	}
 
-	private int id(){
+	private Tuple id(){
 		if(tokens.get(currentTokenindex).equals("id")){
 			if(symTable.get(this.lexemes.get(currentTokenindex)) == null){
 			semanticError("Undefined Variable");
@@ -259,18 +259,18 @@ public class SyntacticAnalysis {
 			currentTokenindex++;//consumes a token
 			
 			if (type.equals("int")){
-			return 1;
+			return new Tuple(1,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("float")){
-				return 2;
+				return new Tuple(2,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			}else if (type.equals("bool")){
-				return 4;
+				return new Tuple(4,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("char")){
-				return 5;
+				return new Tuple(5, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
 			}
 		} else{
 			error();
 		}
-		return 0;
+		return new Tuple(0, (int) 0 );
 	}
 
 	private void assignOp(){
@@ -283,18 +283,19 @@ public class SyntacticAnalysis {
 	}
 
 
-	private int Expression(){
+	private Tuple Expression(){
 		int current = currentTokenindex;
 
 		int largestType = 0;
-		int result = Conjunction();
+		Tuple resultTuple = Conjunction();
+		int result = resultTuple.maxType;
 		if (result>largestType){
 			largestType = result;
 		}
 		while(tokens.get(currentTokenindex).equals("||") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
 		
-			result = Conjunction();
+			result = Conjunction().maxType;
 			if (result>largestType){
 				largestType = result;
 			}
@@ -303,100 +304,105 @@ public class SyntacticAnalysis {
 		if(current == currentTokenindex){
 			error();
 		}
-		return largestType;
+		return new Tuple(largestType, (int) 0);
 	}
-	private int Conjunction(){
+	private Tuple Conjunction(){
 	
 		int largestType = 0;
-		int result = Equality();
+		Tuple resultTuple = Equality();
+		int result = resultTuple.maxType;
 		if (result>largestType){
 			largestType = result;
 		}
 		while(tokens.get(currentTokenindex).equals("&&") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
 			
-			 result = Equality();
+			 result = Equality().maxType;
 				if (result>largestType){
 					largestType = result;
 				}
 		}
-		return largestType;
+		return new Tuple(largestType, (int) 0);
 	}
 
-	private int Equality(){
+	private Tuple Equality(){
 	
 		int largestType = 0;
-		int result = Relation();
+		Tuple resultTuple = Relation();
+		int result = resultTuple.maxType;
 		if (result>largestType){
 			largestType = result;
 		}
 		while(tokens.get(currentTokenindex).equals("equOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
 	
-			 result = Relation();
+			 result = Relation().maxType;
 				if (result>largestType){
 					largestType = result;
 				}
 		}
-		return largestType;
+		return new Tuple(largestType, (int) 0);
 	}
 
 
-	private int Relation(){
+	private Tuple Relation(){
 		
 		int largestType = 0;
-		int result = Addition();
+		Tuple resultTuple = Addition();
+		int result = resultTuple.maxType;
 		if (result>largestType){
 			largestType = result;
 		}
 		while(tokens.get(currentTokenindex).equals("relOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
 			
-			 result = Addition();
+			 result = Addition().maxType;
 				if (result>largestType){
 					largestType = result;
 				}
 		}
-		return largestType;
+		return new Tuple(largestType, (int) 0);
 	}
 
 
-	private int Addition(){
+	private Tuple Addition(){
 		int largestType = 0;
-		int result = Term();
+		Tuple resultTuple = Term();
+		int result = resultTuple.maxType;
 		if (result>largestType){
 			largestType = result;
 		}
 		while(tokens.get(currentTokenindex).equals("addOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			 result = Term();
+			 result = Term().maxType;
 				if (result>largestType){
 					largestType = result;
 				}
 		}
-		return largestType;
+		return new Tuple(largestType, (int) 0);
 	}
 
 
-	private int Term(){
+	private Tuple Term(){
 		int largestType = 0;
-		int result = Factor();
+		Tuple resultTuple = Factor();
+		int result = resultTuple.maxType;
 		if (result>largestType){
 			largestType = result;
 		}
 		
 		while(tokens.get(currentTokenindex).equals("multOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			 result = Factor();
+			 result = Factor().maxType;
 			if (result>largestType){
 				largestType = result;
 			}
 		}
-		return largestType;
+		return new Tuple(largestType, (int) 0);
 	}
 
 
-	private int Factor(){
+	private Tuple Factor(){
 		if(tokens.get(currentTokenindex).equals("id")){
 			if(symTable.get(this.lexemes.get(currentTokenindex)) == null){
 			semanticError("Undefined Variable");
@@ -405,30 +411,32 @@ public class SyntacticAnalysis {
 			String type = symTable.get(this.lexemes.get(currentTokenindex)).type;
 			currentTokenindex++;
 			if (type.equals("int")){
-			return 1;
+				//Tuple toReturn = new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
+			return new Tuple(1,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("float")){
-				return 2;
+				return new Tuple(2,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			}else if (type.equals("bool")){
-				return 4;
+				return new Tuple(4,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("char")){
-				return 5;
+				return new Tuple(5, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
 			}
 			
 			} else if ( tokens.get(currentTokenindex).equals("intLiteral")){
 				currentTokenindex++;
-				return 1;
+				return new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
 			} else if (tokens.get(currentTokenindex).equals("boolLiteral")){
 					currentTokenindex++;
-					return 4;
+					return new Tuple(4, (boolean) Boolean.parseBoolean(this.lexemes.get(currentTokenindex-1)));
 			} else if (tokens.get(currentTokenindex).equals("floatLiteral")){
 					currentTokenindex++;
-					return 2;
+					return new Tuple(2, (float)  Float.parseFloat(this.lexemes.get(currentTokenindex-1)));
 					
 			} else if ( tokens.get(currentTokenindex).equals("charLiteral")){
 			currentTokenindex++;
+			return new Tuple(5, (String) this.lexemes.get(currentTokenindex-1));
 		} else if(tokens.get(currentTokenindex).equals("(")) {
 			currentTokenindex++;
-			int result = Expression();//Todo Make this return a value
+			Tuple result = Expression();
 			if(tokens.get(currentTokenindex).equals(")")){
 				currentTokenindex++;
 				return result;
@@ -436,7 +444,7 @@ public class SyntacticAnalysis {
 				error();
 			}
 		}
-		return 0;
+		return new Tuple(0, (int) 0 );
 	}
 
 	private void print(){
@@ -524,3 +532,13 @@ public class SyntacticAnalysis {
 		}
 	}
 }
+/*if (type.equals("int")){
+				//Tuple toReturn = new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
+			return new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
+			} else if (type.equals("float")){
+				return new Tuple(2, (float)  Float.parseFloat(this.lexemes.get(currentTokenindex-1)));
+			}else if (type.equals("bool")){
+				return new Tuple(4, (boolean) Boolean.parseBoolean(this.lexemes.get(currentTokenindex-1)));
+			} else if (type.equals("char")){
+				return new Tuple(5, (String) this.lexemes.get(currentTokenindex-1));
+			}*/
