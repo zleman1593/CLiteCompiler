@@ -40,12 +40,8 @@ id          x
 assignOp    =
 intLiteral  124
 ;           ;
-id          lol
-assignOp    =
-id          lol
-addOp       +
-charLiteral h
-;           ;
+comment     //lol = lol + 'h';
+
 print       print
 boolLiteral false
 ;           ;

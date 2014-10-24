@@ -11,7 +11,7 @@ if (true == n)
 	print yes;
 //x = r + nonsense;
     x = 124;
-    lol = lol + 'h';
+    //lol = lol + 'h';
 print false;
     yes = r +12.1;
     
