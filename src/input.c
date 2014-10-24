@@ -1,22 +1,19 @@
 int main () {
-
+    
 int x;
 bool n;
+char lol;
 float yes;
 int r;
+float qwert;
+      //lol  = 'q';
 if (true == n)
 	print yes;
-n = r;
+//x = r + nonsense;
+    x = 124;
+    lol = lol + 'h';
 print false;
-if (24 > n)//What is this???
-	print n;
-while(true)
-	n = n + 1;
-if (32-10<x || xcv < ety)
-	x = 10;
-	r = 12;
-	print x + r;
-	sd = (67);
-
-return x;
+    yes = r +12.1;
+    
+    return x;
 }

@@ -4,16 +4,20 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.HashMap;
 
 public class SyntacticAnalysis {
 	//Stores the classified Tokens
 	public ArrayList<String> tokens = new ArrayList<String>();
+	//Stores the  Lexemes
+	public ArrayList<String> lexemes = new ArrayList<String>();
 	//Pointer to next token to look at
 	private int currentTokenindex = 0;
 	//Error Flag
 	private boolean error = false;
-
-
+	//Create HashMap
+	private HashMap<String, Heterogeneous> symTable = new HashMap<String, Heterogeneous>();
 	//This method is called to start the syntactical analysis of the loaded tokens
 	public void verifySyntax(){
 		Program();
@@ -65,6 +69,27 @@ public class SyntacticAnalysis {
 			if(tokens.get(currentTokenindex).equals("id")){
 				currentTokenindex++;//consumes a token
 				semiColon();
+				if (!error){
+					//checks to see if duplicate declaration
+				if(symTable.get(this.lexemes.get(currentTokenindex-2) ) != null){
+					semanticError("duplicate");
+				}
+					
+				}
+				
+					if (lexemes.get(currentTokenindex-3).equals("int")) {
+					Heterogeneous v = new Heterogeneous("int");
+					symTable.put(this.lexemes.get(currentTokenindex-2), v);
+					} else if (lexemes.get(currentTokenindex-3).equals("float")){
+					Heterogeneous v = new Heterogeneous("float");
+					symTable.put(this.lexemes.get(currentTokenindex-2), v);
+					} else if (lexemes.get(currentTokenindex-3).equals("char")){
+						Heterogeneous v = new Heterogeneous("char");
+						symTable.put(this.lexemes.get(currentTokenindex-2), v);
+						}else {
+					Heterogeneous v = new Heterogeneous("bool");
+					symTable.put(this.lexemes.get(currentTokenindex-2), v);
+				}
 			}else{
 				error();
 			}
@@ -90,7 +115,7 @@ public class SyntacticAnalysis {
 				errorMissingSyntax();
 			}
 			else{
-				//Tells program to terminate
+				//Tells program to terminate because it reached the end symbol
 				if(tokens.get(currentTokenindex).equals("}")){
 					currentTokenindex++;
 				return true;
@@ -197,10 +222,20 @@ public class SyntacticAnalysis {
 
 
 	private void Assignment(){
+		int convertFrom = 0;
+		int convertTo = 0;
 		if(currentTokenindex < tokens.size()){
-			id();
+			convertTo = id();
 			assignOp();
-			Expression();
+			convertFrom = Expression();
+			if(convertTo == 4 &&  convertFrom != 4){
+				semanticError("Narrowing Conversion is not allowed");
+			} else if (convertTo == 5 &&  convertFrom !=  5){
+				semanticError("Narrowing Conversion is not allowed");
+			}
+			else if (convertFrom > convertTo){
+				semanticError("Narrowing Conversion is not allowed");
+			}
 			semiColon();
 		}
 	}
@@ -208,19 +243,34 @@ public class SyntacticAnalysis {
 	private void semiColon(){
 		if(tokens.get(currentTokenindex).equals(";")){
 			currentTokenindex++;//consumes a token
+			
 			return;
 		}else{
 			error();
 		}
 	}
 
-	private void id(){
+	private int id(){
 		if(tokens.get(currentTokenindex).equals("id")){
+			if(symTable.get(this.lexemes.get(currentTokenindex)) == null){
+			semanticError("Undefined Variable");
+			}
+			String type = symTable.get(this.lexemes.get(currentTokenindex)).type;
 			currentTokenindex++;//consumes a token
-			return;
+			
+			if (type.equals("int")){
+			return 1;
+			} else if (type.equals("float")){
+				return 2;
+			}else if (type.equals("bool")){
+				return 4;
+			} else if (type.equals("char")){
+				return 5;
+			}
 		} else{
 			error();
 		}
+		return 0;
 	}
 
 	private void assignOp(){
@@ -233,82 +283,160 @@ public class SyntacticAnalysis {
 	}
 
 
-	private void Expression(){
+	private int Expression(){
 		int current = currentTokenindex;
-		Conjunction();
+
+		int largestType = 0;
+		int result = Conjunction();
+		if (result>largestType){
+			largestType = result;
+		}
 		while(tokens.get(currentTokenindex).equals("||") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			Conjunction();
+		
+			result = Conjunction();
+			if (result>largestType){
+				largestType = result;
+			}
 		}
 		//Makes sure that when this is called that it raises an error if there is no expression 
 		if(current == currentTokenindex){
 			error();
 		}
-
+		return largestType;
 	}
-	private void Conjunction(){
-		Equality();
+	private int Conjunction(){
+	
+		int largestType = 0;
+		int result = Equality();
+		if (result>largestType){
+			largestType = result;
+		}
 		while(tokens.get(currentTokenindex).equals("&&") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			Equality();
+			
+			 result = Equality();
+				if (result>largestType){
+					largestType = result;
+				}
 		}
-
+		return largestType;
 	}
 
-	private void Equality(){
-		Relation();
+	private int Equality(){
+	
+		int largestType = 0;
+		int result = Relation();
+		if (result>largestType){
+			largestType = result;
+		}
 		while(tokens.get(currentTokenindex).equals("equOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			Relation();
+	
+			 result = Relation();
+				if (result>largestType){
+					largestType = result;
+				}
 		}
+		return largestType;
 	}
 
 
-	private void Relation(){
-		Addition();
+	private int Relation(){
+		
+		int largestType = 0;
+		int result = Addition();
+		if (result>largestType){
+			largestType = result;
+		}
 		while(tokens.get(currentTokenindex).equals("relOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			Addition();
+			
+			 result = Addition();
+				if (result>largestType){
+					largestType = result;
+				}
 		}
+		return largestType;
 	}
 
 
-	private void Addition(){
-		Term();
+	private int Addition(){
+		int largestType = 0;
+		int result = Term();
+		if (result>largestType){
+			largestType = result;
+		}
 		while(tokens.get(currentTokenindex).equals("addOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			Term();
+			 result = Term();
+				if (result>largestType){
+					largestType = result;
+				}
 		}
+		return largestType;
 	}
 
 
-	private void Term(){
-		Factor();
+	private int Term(){
+		int largestType = 0;
+		int result = Factor();
+		if (result>largestType){
+			largestType = result;
+		}
+		
 		while(tokens.get(currentTokenindex).equals("multOp") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			Factor();
+			 result = Factor();
+			if (result>largestType){
+				largestType = result;
+			}
 		}
+		return largestType;
 	}
 
 
-	private void Factor(){
-		if (tokens.get(currentTokenindex).equals("id")
-				|| tokens.get(currentTokenindex).equals("intLiteral")
-				|| tokens.get(currentTokenindex).equals("boolLiteral")
-				|| tokens.get(currentTokenindex).equals("floatLiteral")
-				|| tokens.get(currentTokenindex).equals("charLiteral")
-
-				){
+	private int Factor(){
+		if(tokens.get(currentTokenindex).equals("id")){
+			if(symTable.get(this.lexemes.get(currentTokenindex)) == null){
+			semanticError("Undefined Variable");
+			}
+	
+			String type = symTable.get(this.lexemes.get(currentTokenindex)).type;
+			currentTokenindex++;
+			if (type.equals("int")){
+			return 1;
+			} else if (type.equals("float")){
+				return 2;
+			}else if (type.equals("bool")){
+				return 4;
+			} else if (type.equals("char")){
+				return 5;
+			}
+			
+			} else if ( tokens.get(currentTokenindex).equals("intLiteral")){
+				currentTokenindex++;
+				return 1;
+			} else if (tokens.get(currentTokenindex).equals("boolLiteral")){
+					currentTokenindex++;
+					return 4;
+			} else if (tokens.get(currentTokenindex).equals("floatLiteral")){
+					currentTokenindex++;
+					return 2;
+					
+			} else if ( tokens.get(currentTokenindex).equals("charLiteral")){
 			currentTokenindex++;
 		} else if(tokens.get(currentTokenindex).equals("(")) {
 			currentTokenindex++;
-			Expression();
+			int result = Expression();//Todo Make this return a value
 			if(tokens.get(currentTokenindex).equals(")")){
 				currentTokenindex++;
+				return result;
 			}else{
 				error();
 			}
 		}
+		return 0;
 	}
 
 	private void print(){
@@ -321,6 +449,7 @@ public class SyntacticAnalysis {
 			//removes uneeded comments
 			if(!tokens.get(i).get(0).equals("comment")){
 				this.tokens.add(tokens.get(i).get(0));
+				this.lexemes.add(tokens.get(i).get(1));
 			}
 		}
 	}
@@ -332,6 +461,17 @@ public class SyntacticAnalysis {
 		System.out.println("There was a syntax error on the " + (currentTokenindex +1) + "th token!");
 		if(!(currentTokenindex+1 >= tokens.size())){
 			System.out.println("Token: "+ tokens.get(currentTokenindex));
+		}
+		print();
+	}
+	//Called when a semantic error is caught 
+	private void semanticError(String type){
+		error = true;
+		System.out.println("");
+		System.out.println("There was a semantic error on the " + (currentTokenindex +1) + "th token!");
+		System.out.println("Type Error: " + type);
+		if(!(currentTokenindex+1 >= tokens.size())){
+			System.out.println("Lexeme: "+ lexemes.get(currentTokenindex));
 		}
 		print();
 	}
@@ -379,6 +519,7 @@ public class SyntacticAnalysis {
 			if (!tokens[i].equals("")){
 				this.tokens.add(tokens[i]);
 				i++;
+				this.lexemes.add(tokens[i]);
 			}
 		}
 	}

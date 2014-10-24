@@ -16,6 +16,7 @@ if (32-10<x || xcv < ety)
 	x = 10;
 	r = 12;
 	print x + r;
+	sd = (67);
 
 return x;
 }
