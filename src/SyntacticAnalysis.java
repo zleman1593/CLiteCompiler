@@ -308,49 +308,83 @@ public class SyntacticAnalysis {
 	private Tuple Expression(){
 		int current = currentTokenindex;
 
-		boolean evaluation = false;
+		boolean returnValue = false;
+		boolean quickReturn = true;
+
 		int largestType = 0;
-		Tuple resultTuple = Conjunction();
-		int result = resultTuple.maxType;
-
-		if (result>largestType){
-			largestType = result;
-		}
-		//float total = (float) Float.parseFloat(resultTuple.value.toString());
-		while(tokens.get(currentTokenindex).equals("||") && currentTokenindex < tokens.size() ){
-			currentTokenindex++;//consumes a token
-
-			result = Conjunction().maxType;
-			if (result>largestType){
-				largestType = result;
+		Tuple result = Conjunction();
+		largestType = result.maxType;
+		if(tokens.get(currentTokenindex).equals("||")){
+			quickReturn = false;
+			if(result.maxType == 4){
+				if (Boolean.parseBoolean(result.value.toString())){
+					returnValue = true;
+				}
+				}else{semanticError("Expression can not be evaluated to a boolean");}
 			}
+		while(tokens.get(currentTokenindex).equals("||") && currentTokenindex < tokens.size() ){
+			
+			currentTokenindex++;//consumes a token
+			largestType = 4;
+			 result = Conjunction();
+		
+			if(result.maxType == 4){
+				if (Boolean.parseBoolean(result.value.toString())){
+					returnValue = true;
+				}
+		
+				
+			}else{
+					semanticError("Expression can not be evaluated to a boolean");
+				}
+
 		}
 		//Makes sure that when this is called that it raises an error if there is no expression 
 		if(current == currentTokenindex){
 			error();
 		}
-		return new Tuple(largestType, resultTuple.value);
+		if(!quickReturn){
+			return new Tuple(largestType, returnValue);
+			} 
+			
+			return new Tuple(largestType, result.value );
 	}
 	private Tuple Conjunction(){
 
-		boolean evaluation = false;
+		boolean returnValue = true;
+boolean quickReturn = true;
 		int largestType = 0;
-		Tuple resultTuple = Equality();
-		int result = resultTuple.maxType;
-
-		if (result>largestType){
-			largestType = result;
+		Tuple result = Equality();
+		largestType = result.maxType;
+if(tokens.get(currentTokenindex).equals("&&")){
+	quickReturn = false;
+		if(result.maxType == 4){
+			if (!Boolean.parseBoolean(result.value.toString())){
+				returnValue = false;
+			}}else{semanticError("Expression can not be evaluated to a boolean");}
 		}
-		//float total = (float) Float.parseFloat(resultTuple.value.toString());
 		while(tokens.get(currentTokenindex).equals("&&") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
+			largestType = 4;
+			 result = Equality();
+		
+			if(result.maxType == 4){
+				if (!Boolean.parseBoolean(result.value.toString())){
+					returnValue = false;
 
-			result = Equality().maxType;
-			if (result>largestType){
-				largestType = result;
-			}
+				}
+				
+			}else{
+					semanticError("Expression can not be evaluated to a boolean");
+				}
+
 		}
-		return new Tuple(largestType, resultTuple.value );
+		
+		if(!quickReturn){
+		return new Tuple(largestType, returnValue);
+		} 
+		
+		return new Tuple(largestType, result.value );
 	}
 
 	//Todo make this handle more than two comparisions
@@ -434,7 +468,7 @@ public class SyntacticAnalysis {
 
 		boolean evaluation = false;
 		int largestType = 0;
-		Tuple resultTuple = Term();
+		Tuple resultTuple = Addition();
 		int result = resultTuple.maxType;
 
 		if (result>largestType){
