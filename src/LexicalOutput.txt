@@ -20,8 +20,47 @@ id          yes
 type        int
 id          r
 ;           ;
+type        bool
+id          hope
+;           ;
 type        float
-id          qwert
+id          nonsense
+;           ;
+id          x
+assignOp    =
+intLiteral  23
+multOp      *
+intLiteral  2
+;           ;
+id          n
+assignOp    =
+boolLiteral true
+;           ;
+id          r
+assignOp    =
+intLiteral  10
+;           ;
+id          hope
+assignOp    =
+id          x
+relOp       <=
+id          r
+;           ;
+id          nonsense
+assignOp    =
+id          r
+multOp      *
+id          x
+;           ;
+id          yes
+assignOp    =
+id          nonsense
+;           ;
+id          yes
+assignOp    =
+id          nonsense
+multOp      *
+floatLiteral 12.1
 ;           ;
 comment     //lol  = 'q';
 
@@ -34,24 +73,47 @@ id          n
 print       print
 id          yes
 ;           ;
-comment     //x = r + nonsense;
-
+if          if
+(           (
 id          x
-assignOp    =
-intLiteral  124
-;           ;
+relOp       >=
+intLiteral  3
+)           )
 comment     //lol = lol + 'h';
 
 print       print
-boolLiteral false
+id          x
 ;           ;
+print       print
+id          n
+;           ;
+print       print
+id          lol
+;           ;
+print       print
 id          yes
+;           ;
+print       print
+id          r
+;           ;
+print       print
+id          hope
+;           ;
+return      return
+id          x
+;           ;
+id          r
 assignOp    =
 id          r
 addOp       +
 floatLiteral 12.1
 ;           ;
-return      return
-id          x
+comment     //Error here it doe snot catch this
+
+id          n
+assignOp    =
+boolLiteral true
 ;           ;
+comment     //Double check for cathcing misisng ;
+
 }           }

@@ -148,8 +148,9 @@ public class SyntacticAnalysis {
 		if( currentTokenindex < tokens.size()){
 			if (tokens.get(currentTokenindex).equals("print")){
 				currentTokenindex++;
-				Expression();
+				Tuple result = Expression();
 				semiColon();
+				System.out.print(result.value);
 				return true;
 			}
 		}
@@ -157,6 +158,7 @@ public class SyntacticAnalysis {
 	}
 
 	private boolean IfStatement(){
+		Object result;
 		if( currentTokenindex < tokens.size()){
 			String required[];
 			required = new String[] {"if","(",")",};
@@ -164,7 +166,7 @@ public class SyntacticAnalysis {
 				if(tokens.get(currentTokenindex).equals(required[i])){
 					currentTokenindex++;//consumes a token
 					if(i ==  1 ){
-						Expression();
+						result = Expression();
 					}if(i == 2 ){
 						Statement();
 						if(currentTokenindex < tokens.size() ){
@@ -226,9 +228,12 @@ public class SyntacticAnalysis {
 		int convertFrom = 0;
 		int convertTo = 0;
 		if(currentTokenindex < tokens.size()){
+			
 			convertTo = id().maxType;
+			String varName  =  lexemes.get(currentTokenindex-1);
 			assignOp();
-			convertFrom = Expression().maxType;
+			Tuple result =  Expression();
+			convertFrom = result.maxType;
 			if(convertTo == 4 &&  convertFrom != 4){
 				semanticError("Narrowing Conversion is not allowed");
 			} else if (convertTo == 5 &&  convertFrom !=  5){
@@ -238,6 +243,22 @@ public class SyntacticAnalysis {
 				semanticError("Narrowing Conversion is not allowed");
 			}
 			semiColon();
+			if(!error){
+				switch (convertTo) {
+		        case 1: 
+					this.symTable.get(varName).value = (int) result.value;
+					break;
+
+		        case 2:  this.symTable.get(varName).value = Float.parseFloat(result.value.toString());
+		        break;
+		        case 4:  this.symTable.get(varName).value = (boolean) result.value;
+		        //this.symTable.get(varName).value = Boolean.parseBoolean(result.value.toString());
+		        break;
+		        case 5:  this.symTable.get(varName).value = (String) result.value;
+		        break;
+		    }
+				
+			}
 		}
 	}
 
@@ -295,7 +316,7 @@ public class SyntacticAnalysis {
 		if (result>largestType){
 			largestType = result;
 		}
-		float total = (float) Float.parseFloat(resultTuple.value.toString());
+		//float total = (float) Float.parseFloat(resultTuple.value.toString());
 		while(tokens.get(currentTokenindex).equals("||") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
 
@@ -308,7 +329,7 @@ public class SyntacticAnalysis {
 		if(current == currentTokenindex){
 			error();
 		}
-		return new Tuple(largestType, total);
+		return new Tuple(largestType, resultTuple.value);
 	}
 	private Tuple Conjunction(){
 
@@ -320,7 +341,7 @@ public class SyntacticAnalysis {
 		if (result>largestType){
 			largestType = result;
 		}
-		float total = (float) Float.parseFloat(resultTuple.value.toString());
+		//float total = (float) Float.parseFloat(resultTuple.value.toString());
 		while(tokens.get(currentTokenindex).equals("&&") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
 
@@ -329,7 +350,7 @@ public class SyntacticAnalysis {
 				largestType = result;
 			}
 		}
-		return new Tuple(largestType, total );
+		return new Tuple(largestType, resultTuple.value );
 	}
 
 	//Todo make this handle more than two comparisions
@@ -343,6 +364,7 @@ public class SyntacticAnalysis {
 		largestType = result;
 		int firstType = result;
 		int secondType = 0;
+		boolean returnTruthValue = false;
 
 		
 		String total = resultTuple.value.toString();
@@ -355,6 +377,7 @@ public class SyntacticAnalysis {
 			
 			secondType= resultTuple.maxType;
 			boolean evaluation  = false;
+			returnTruthValue = true;
 			//test for two type compatiability
 			
 			 if ((firstType == 4) && (secondType == 4)){
@@ -391,7 +414,13 @@ public class SyntacticAnalysis {
 
         case 2:  return new Tuple(largestType, Float.parseFloat(total));
 
-        case 4:  return new Tuple(largestType, truth);
+        case 4:  
+        	if(returnTruthValue){
+        		return new Tuple(largestType, truth);
+        	}else{
+        			return new Tuple(largestType, Boolean.parseBoolean(total));
+        		}
+  
         
         case 5:  return new Tuple(largestType, total);
  
@@ -439,23 +468,23 @@ public class SyntacticAnalysis {
 
 				resultTuple = Addition();
 				float numericalResult = Float.parseFloat(resultTuple.value.toString());
-				if(lexemes.get(currentTokenindex -1).equals("<")){
+				if(lexemes.get(currentTokenindex - 2).equals("<")){
 					evaluation =  total < numericalResult;
-				} else if (lexemes.get(currentTokenindex -1).equals(">")){
+				} else if (lexemes.get(currentTokenindex - 2).equals(">")){
 					evaluation =  total > numericalResult;
-				} else if (lexemes.get(currentTokenindex -1).equals("<=")){
+				} else if (lexemes.get(currentTokenindex - 2 ).equals("<=")){
 					evaluation =  total <= numericalResult;
-				}else if (lexemes.get(currentTokenindex -1).equals(">=")){
+				}else if (lexemes.get(currentTokenindex - 2).equals(">=")){
 					evaluation =  total >= numericalResult;
 				}
 				//pass the value along for the next comparison
 				total = numericalResult;
 			}
 
-			System.out.println("Value: " + (boolean) true);
 			if(evaluation){
 				return new Tuple(4, (boolean) true);
 			} else{
+				System.out.println("Value: " + false);
 				return new Tuple(4, (boolean) false);
 			}
 		}
@@ -659,6 +688,7 @@ public class SyntacticAnalysis {
 				System.out.println("Lexeme: "+ lexemes.get(currentTokenindex));
 			}
 			print();
+			System.exit(0);
 		}
 		//Is called if there is syntax missing is a special case.
 		private void errorMissingSyntax(){
@@ -666,6 +696,7 @@ public class SyntacticAnalysis {
 			System.out.println("");
 			System.out.println("Incomplete Statement: There is missing Syntax. ");
 			print();
+			System.exit(0);
 		}
 		//Only prints success when no errors are detected
 		private void sucess(){
@@ -674,6 +705,7 @@ public class SyntacticAnalysis {
 				System.out.println("The syntax is correct!");
 				print();
 			}
+			System.exit(0);
 		}
 
 		//Grabs tokens from a file that has already been lexed

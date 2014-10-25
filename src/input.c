@@ -5,15 +5,34 @@ bool n;
 char lol;
 float yes;
 int r;
-float qwert;
+bool hope;
+    
+float nonsense;
+    x = 23*2;
+     n=true;
+    r=10;
+    hope = x <= r;
+     nonsense = r * x;
+    yes = nonsense;
+    yes = nonsense * 12.1;
+
       //lol  = 'q';
 if (true == n)
 	print yes;
-//x = r + nonsense;
-    x = 124;
+    if (x >= 3)
+
     //lol = lol + 'h';
-print false;
-    yes = r +12.1;
-    
+
+    print x;
+    print n;
+    print lol;
+    print yes;
+    print r;
+    print hope;
     return x;
+    r = r + 12.1;//Error here it doe snot catch this
+    n=true;//Double check for cathcing misisng ;
+    
+
+ 
 }
