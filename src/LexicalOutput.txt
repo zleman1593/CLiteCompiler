@@ -28,8 +28,6 @@ id          nonsense
 ;           ;
 id          x
 assignOp    =
-intLiteral  23
-multOp      *
 intLiteral  2
 ;           ;
 id          r
@@ -78,10 +76,63 @@ id          nonsense
 multOp      *
 floatLiteral 12.1
 ;           ;
+while       while
+(           (
+intLiteral  10
+relOp       <
+id          x
+)           )
+id          x
+assignOp    =
+id          x
+addOp       +
+intLiteral  1
+;           ;
 comment     //lol  = 'q';
+
+comment     //if (true)
 
 if          if
 (           (
+intLiteral  232
+equOp       ==
+intLiteral  116
+multOp      *
+intLiteral  2
+addOp       +
+intLiteral  1
+addOp       -
+intLiteral  1
+)           )
+id          yes
+assignOp    =
+intLiteral  22222
+;           ;
+else        else
+id          yes
+assignOp    =
+intLiteral  111111
+;           ;
+comment     //else
+
+comment     // r = 111111;
+
+comment     //r = 69999;
+
+print       print
+id          yes
+;           ;
+if          if
+(           (
+id          x
+relOp       <
+intLiteral  3
+)           )
+print       print
+charLiteral w
+;           ;
+id          n
+assignOp    =
 boolLiteral true
 equOp       ==
 id          n
@@ -92,21 +143,18 @@ id          hope
 ||          ||
 id          hope
 equOp       ==
-boolLiteral true
-)           )
-print       print
-id          yes
+boolLiteral false
 ;           ;
-if          if
-(           (
-id          x
-relOp       >=
-intLiteral  3
-)           )
 comment     //lol = lol + 'h';
 
 print       print
+boolLiteral false
+;           ;
+print       print
 id          x
+;           ;
+print       print
+boolLiteral false
 ;           ;
 print       print
 id          n

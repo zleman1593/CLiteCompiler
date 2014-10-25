@@ -26,12 +26,12 @@ ONE ASSUMPTION for the Lexer: That after a one line comment that a new line is m
 
 
 
-IF you are trying to  load an already lexically processed file for syntactical analysis, then:
+IF you are trying to load an already lexically processed file for syntactical and semantic analysis, then:
  1. Uncomment the line in the program class labeled with: //TO LOAD LEXED FILE
  
- 2. Comment out all the code above where the syntacic analyzer class is declared.
+ 2. Comment out all the code above where the syntactic analyzer class is declared.
  
- 3.Run the from the command line after compiling with the single argument being the location of the lexed file 
+ 3.Run  from the command line after compiling with the single argument being the location of the lexed file 
  
  
 

@@ -16,6 +16,10 @@ public class SyntacticAnalysis {
 	private int currentTokenindex = 0;
 	//Error Flag
 	private boolean error = false;
+	//If statement truth Flag
+	private boolean evaluateIfToTrue = true;
+	//Tracks nested if statements
+	private int ifCount = 0;
 
 	//Create HashMap
 	private HashMap<String, Heterogeneous> symTable = new HashMap<String, Heterogeneous>();
@@ -150,7 +154,9 @@ public class SyntacticAnalysis {
 				currentTokenindex++;
 				Tuple result = Expression();
 				semiColon();
+				if(evaluateIfToTrue){
 				System.out.print(result.value);
+				}
 				return true;
 			}
 		}
@@ -158,7 +164,9 @@ public class SyntacticAnalysis {
 	}
 
 	private boolean IfStatement(){
-		Object result;
+		ifCount++;
+		boolean matchedIf  = false;
+		Tuple result;
 		if( currentTokenindex < tokens.size()){
 			String required[];
 			required = new String[] {"if","(",")",};
@@ -167,44 +175,84 @@ public class SyntacticAnalysis {
 					currentTokenindex++;//consumes a token
 					if(i ==  1 ){
 						result = Expression();
+						if (result.maxType == 4){
+							if (Boolean.parseBoolean(result.value.toString()) ){//&& evaluateIfToTrue){
+								evaluateIfToTrue = true;
+							} else{
+								evaluateIfToTrue = false;
+							}
+						} else{semanticError("Expression can not be evaluated to a boolean");}
+							
+						
 					}if(i == 2 ){
 						Statement();
+						matchedIf = true;
 						if(currentTokenindex < tokens.size() ){
 							//else clause
 							if (tokens.get(currentTokenindex).equals("else")){
+								//If evaluated to false
+								if(evaluateIfToTrue){
+									evaluateIfToTrue = false;
+								}else{
+									evaluateIfToTrue = true;
+								}
 								currentTokenindex++;
 								int current = currentTokenindex;
 								Statement();
 								//makes sure the else is followed by a statement
 								if(current == currentTokenindex){
 									error();
+								} else{
+									matchedIf = true;
 								}
 							}
-						}
+						} 
 					}
-					return true;
+					
 				}
 			} 
 		}
-		return false;
+		
+		ifCount--;
+		if(ifCount == 0){
+			evaluateIfToTrue = true;//Reset
+		}
+		return matchedIf;
 	}
 
 
 	private boolean WhileStmt(){
+		int repeatWhileExpression = 0;
+		int continueIndex = 0;
 		if( currentTokenindex < tokens.size()){
 			if (tokens.get(currentTokenindex).equals("while")){
 				currentTokenindex++;
 				if (tokens.get(currentTokenindex).equals("(")){
 					currentTokenindex++;
+					 repeatWhileExpression = currentTokenindex;
 					Expression();
 					if (tokens.get(currentTokenindex).equals(")")){
 						currentTokenindex++;
 						int current = currentTokenindex;
 						Statement();
+						continueIndex = currentTokenindex;
 						//checks to make sure there was a valid statement
 						if(current == currentTokenindex){ error();}
 					}else{error();}
 				}else{error();}
+				
+				
+				currentTokenindex = repeatWhileExpression;
+				//it is a syntactically valid while statement. Now run it:
+				while((boolean) Expression().value){
+					System.out.println("trough");
+					currentTokenindex++;
+					Statement();
+				currentTokenindex = repeatWhileExpression;
+				}
+				currentTokenindex = continueIndex;
+				
+				
 				return true;
 			}
 		}
@@ -243,7 +291,7 @@ public class SyntacticAnalysis {
 				semanticError("Narrowing Conversion is not allowed");
 			}
 			semiColon();
-			if(!error){
+			if(!error && evaluateIfToTrue){
 				switch (convertTo) {
 				case 1: 
 					this.symTable.get(varName).value = (int) result.value;
@@ -439,8 +487,6 @@ if(tokens.get(currentTokenindex).equals("&&")){
 
 			}
 
-
-
 		}
 		//Cases convert string to appropriate value based on largestType
 		switch (largestType) {
@@ -519,33 +565,7 @@ if(tokens.get(currentTokenindex).equals("&&")){
 		}
 	}
 
-	/*
 
-	private Tuple Relation(){
-
-		float total = 0;
-		boolean evaluation = false;
-		int largestType = 0;
-		Tuple resultTuple = Term();
-		int result = resultTuple.maxType;
-		if (result>largestType){
-			largestType = result;
-		}
-		while(tokens.get(currentTokenindex).equals("relOp") && currentTokenindex < tokens.size() ){
-			currentTokenindex++;//consumes a token
-
-			result = Addition().maxType;
-			if (result>largestType){
-				largestType = result;
-			}
-		}
-		if(evaluation){
-				return new Tuple(4, (boolean) true);
-			} else{
-				return new Tuple(4, (boolean) false);
-			}
-	}
-	 */
 	private Tuple Addition(){
 		int largestType = 0;
 		Tuple resultTuple = Term();
