@@ -228,7 +228,7 @@ public class SyntacticAnalysis {
 		int convertFrom = 0;
 		int convertTo = 0;
 		if(currentTokenindex < tokens.size()){
-			
+
 			convertTo = id().maxType;
 			String varName  =  lexemes.get(currentTokenindex-1);
 			assignOp();
@@ -245,19 +245,19 @@ public class SyntacticAnalysis {
 			semiColon();
 			if(!error){
 				switch (convertTo) {
-		        case 1: 
+				case 1: 
 					this.symTable.get(varName).value = (int) result.value;
 					break;
 
-		        case 2:  this.symTable.get(varName).value = Float.parseFloat(result.value.toString());
-		        break;
-		        case 4:  this.symTable.get(varName).value = (boolean) result.value;
-		        //this.symTable.get(varName).value = Boolean.parseBoolean(result.value.toString());
-		        break;
-		        case 5:  this.symTable.get(varName).value = (String) result.value;
-		        break;
-		    }
-				
+				case 2:  this.symTable.get(varName).value = Float.parseFloat(result.value.toString());
+				break;
+				case 4:  this.symTable.get(varName).value = (boolean) result.value;
+				//this.symTable.get(varName).value = Boolean.parseBoolean(result.value.toString());
+				break;
+				case 5:  this.symTable.get(varName).value = (String) result.value;
+				break;
+				}
+
 			}
 		}
 	}
@@ -312,7 +312,7 @@ public class SyntacticAnalysis {
 		int largestType = 0;
 		Tuple resultTuple = Conjunction();
 		int result = resultTuple.maxType;
-		
+
 		if (result>largestType){
 			largestType = result;
 		}
@@ -337,7 +337,7 @@ public class SyntacticAnalysis {
 		int largestType = 0;
 		Tuple resultTuple = Equality();
 		int result = resultTuple.maxType;
-		
+
 		if (result>largestType){
 			largestType = result;
 		}
@@ -357,7 +357,7 @@ public class SyntacticAnalysis {
 	private Tuple Equality(){
 
 		boolean truth = false;
-		
+
 		int largestType = 0;
 		Tuple resultTuple = Relation();
 		int result = resultTuple.maxType;
@@ -366,77 +366,77 @@ public class SyntacticAnalysis {
 		int secondType = 0;
 		boolean returnTruthValue = false;
 
-		
+
 		String total = resultTuple.value.toString();
 
 		while(tokens.get(currentTokenindex).equals("equOp") && currentTokenindex < tokens.size() ){
-			 total = resultTuple.value.toString();
+			total = resultTuple.value.toString();
 			currentTokenindex++;//consumes a token
 			largestType = 4;//because it has to be a boolean
 			resultTuple = Relation();
-			
+
 			secondType= resultTuple.maxType;
 			boolean evaluation  = false;
 			returnTruthValue = true;
 			//test for two type compatiability
-			
-			 if ((firstType == 4) && (secondType == 4)){
+
+			if ((firstType == 4) && (secondType == 4)){
 				evaluation =  Boolean.parseBoolean(total) == Boolean.parseBoolean(resultTuple.value.toString());
 			} else if ((firstType == 5) && (secondType == 5)){
 				evaluation = total == resultTuple.value.toString();
 			} else if  ((firstType <= 2) && (secondType <= 2)){
 				evaluation =  (float) Float.parseFloat(total) == (float) Float.parseFloat(resultTuple.value.toString());
-		} else{
+			} else{
 				semanticError("Incompatible type comparison");
 			}
 
 			if (evaluation){
-				if(lexemes.get(currentTokenindex -1).equals("==")){
+				if(lexemes.get(currentTokenindex - 2).equals("==")){
 					truth = true;
 				} else{
 					truth = false;
 				}
 			} else{
-				if(lexemes.get(currentTokenindex -1).equals("!=")){
+				if(lexemes.get(currentTokenindex - 2).equals("!=")){
 					truth = true;
 				} else{
 					truth = false;
 				}
-				
+
 			}
 
-			
-			
+
+
 		}
 		//Cases convert string to appropriate value based on largestType
 		switch (largestType) {
-        case 1: return new Tuple(largestType, Integer.parseInt(total));
+		case 1: return new Tuple(largestType, Integer.parseInt(total));
 
-        case 2:  return new Tuple(largestType, Float.parseFloat(total));
+		case 2:  return new Tuple(largestType, Float.parseFloat(total));
 
-        case 4:  
-        	if(returnTruthValue){
-        		return new Tuple(largestType, truth);
-        	}else{
-        			return new Tuple(largestType, Boolean.parseBoolean(total));
-        		}
-  
-        
-        case 5:  return new Tuple(largestType, total);
- 
-    }
+		case 4:  
+			if(returnTruthValue){
+				return new Tuple(largestType, truth);
+			}else{
+				return new Tuple(largestType, Boolean.parseBoolean(total));
+			}
+
+
+		case 5:  return new Tuple(largestType, total);
+
+		}
 		return new Tuple(largestType, total);
-		
+
 	}
 
 
 	private Tuple Relation(){
-		
+
 		boolean evaluation = false;
 		int largestType = 0;
 		Tuple resultTuple = Term();
 		int result = resultTuple.maxType;
-		
+
 		if (result>largestType){
 			largestType = result;
 		}
@@ -446,49 +446,45 @@ public class SyntacticAnalysis {
 				semanticError("Incompatible Operand for relOp");
 			}
 			if(largestType == 4){
-				//System.out.println("Value: " + (boolean) resultTuple.value );
 				return new Tuple(largestType,(boolean) resultTuple.value);
 			} else if(largestType == 5){
-			//	System.out.println("Value: " + (String) resultTuple.value );
 				return new Tuple(largestType, (String) resultTuple.value);
 			}
 		}
-			//If int or float and there is no relative operator
-			if ( largestType == 1 && !tokens.get(currentTokenindex).equals("relOp")){
-				//System.out.println("Value: " + (int) resultTuple.value );
-				return new Tuple(largestType,(int) resultTuple.value);
-			} else if (largestType == 2 && !tokens.get(currentTokenindex).equals("relOp")){
-		//	System.out.println("Value: " + (float) resultTuple.value );
-				return new Tuple(largestType,(float) Float.parseFloat(resultTuple.value.toString()));
-			}
-			
-			float total = (float) Float.parseFloat(resultTuple.value.toString());
-			while(tokens.get(currentTokenindex).equals("relOp") && currentTokenindex < tokens.size() ){
-				currentTokenindex++;//consumes a token
+		//If int or float and there is no relative operator
+		if ( largestType == 1 && !tokens.get(currentTokenindex).equals("relOp")){
+			return new Tuple(largestType,(int) resultTuple.value);
+		} else if (largestType == 2 && !tokens.get(currentTokenindex).equals("relOp")){
 
-				resultTuple = Addition();
-				float numericalResult = Float.parseFloat(resultTuple.value.toString());
-				if(lexemes.get(currentTokenindex - 2).equals("<")){
-					evaluation =  total < numericalResult;
-				} else if (lexemes.get(currentTokenindex - 2).equals(">")){
-					evaluation =  total > numericalResult;
-				} else if (lexemes.get(currentTokenindex - 2 ).equals("<=")){
-					evaluation =  total <= numericalResult;
-				}else if (lexemes.get(currentTokenindex - 2).equals(">=")){
-					evaluation =  total >= numericalResult;
-				}
-				//pass the value along for the next comparison
-				total = numericalResult;
-			}
-
-			if(evaluation){
-				return new Tuple(4, (boolean) true);
-			} else{
-				System.out.println("Value: " + false);
-				return new Tuple(4, (boolean) false);
-			}
+			return new Tuple(largestType,(float) Float.parseFloat(resultTuple.value.toString()));
 		}
-	
+
+		float total = (float) Float.parseFloat(resultTuple.value.toString());
+		while(tokens.get(currentTokenindex).equals("relOp") && currentTokenindex < tokens.size() ){
+			currentTokenindex++;//consumes a token
+
+			resultTuple = Addition();
+			float numericalResult = Float.parseFloat(resultTuple.value.toString());
+			if(lexemes.get(currentTokenindex - 2).equals("<")){
+				evaluation =  total < numericalResult;
+			} else if (lexemes.get(currentTokenindex - 2).equals(">")){
+				evaluation =  total > numericalResult;
+			} else if (lexemes.get(currentTokenindex - 2 ).equals("<=")){
+				evaluation =  total <= numericalResult;
+			}else if (lexemes.get(currentTokenindex - 2).equals(">=")){
+				evaluation =  total >= numericalResult;
+			}
+			//pass the value along for the next comparison
+			total = numericalResult;
+		}
+
+		if(evaluation){
+			return new Tuple(4, (boolean) true);
+		} else{
+			return new Tuple(4, (boolean) false);
+		}
+	}
+
 	/*
 
 	private Tuple Relation(){
@@ -515,245 +511,225 @@ public class SyntacticAnalysis {
 				return new Tuple(4, (boolean) false);
 			}
 	}
-*/
-		private Tuple Addition(){
-			int largestType = 0;
-			Tuple resultTuple = Term();
-			int result = resultTuple.maxType;
+	 */
+	private Tuple Addition(){
+		int largestType = 0;
+		Tuple resultTuple = Term();
+		int result = resultTuple.maxType;
+		if (result>largestType){
+			largestType = result;
+		}
+		/*Char and Bool and not be added or subtracted*/
+		if (largestType == 4 || largestType == 5){
+			if (tokens.get(currentTokenindex).equals("addOp")){
+				semanticError("Incompatible Operand for addOp");
+			}
+			if(largestType == 4){
+				return new Tuple(largestType,(boolean) resultTuple.value);
+			}//Then it equals 5
+			return new Tuple(largestType, (String) resultTuple.value);
+		}
+		float total = (float) Float.parseFloat(resultTuple.value.toString());
+		while(tokens.get(currentTokenindex).equals("addOp") && currentTokenindex < tokens.size() ){
+			int sign = 1;
+			if (lexemes.get(currentTokenindex).equals("-")){
+				sign = -1;
+			}
+			currentTokenindex++;//consumes a token
+			resultTuple = Term();
+			result = resultTuple.maxType;
+
+			float numericalResult = (float) Float.parseFloat(resultTuple.value.toString());
 			if (result>largestType){
 				largestType = result;
 			}
-			/*Char and Bool and not be added or subtracted*/
-			if (largestType == 4 || largestType == 5){
-				if (tokens.get(currentTokenindex).equals("addOp")){
-					semanticError("Incompatible Operand for addOp");
-				}
-				if(largestType == 4){
-					return new Tuple(largestType,(boolean) resultTuple.value);
-				}//Then it equals 5
-				return new Tuple(largestType, (String) resultTuple.value);
-			}
-			float total = (float) Float.parseFloat(resultTuple.value.toString());
-			while(tokens.get(currentTokenindex).equals("addOp") && currentTokenindex < tokens.size() ){
-				int sign = 1;
-				if (lexemes.get(currentTokenindex).equals("-")){
-					sign = -1;
-				}
-				currentTokenindex++;//consumes a token
-				resultTuple = Term();
-				result = resultTuple.maxType;
-
-				float numericalResult = (float) Float.parseFloat(resultTuple.value.toString());
-				if (result>largestType){
-					largestType = result;
-				}
-				total = (float) (total + (sign*numericalResult));
-			} 
-			if(largestType == 1){
-				return new Tuple(largestType, (int) total);
-			} else{
-				return new Tuple(largestType, total);
-			}
+			total = (float) (total + (sign*numericalResult));
+		} 
+		if(largestType == 1){
+			return new Tuple(largestType, (int) total);
+		} else{
+			return new Tuple(largestType, total);
 		}
+	}
 
 
-		private Tuple Term(){
-			
-			int largestType = 0;
-			Tuple resultTuple = Factor();
-			int result = resultTuple.maxType;
-			
+	private Tuple Term(){
+
+		int largestType = 0;
+		Tuple resultTuple = Factor();
+		int result = resultTuple.maxType;
+
+		if (result>largestType){
+			largestType = result;
+		}
+		/*Char and Bool and not be multiplied*/
+		if (largestType == 4 || largestType == 5){
+			if (tokens.get(currentTokenindex).equals("multOp")){
+				semanticError("Incompatible Operand for multOp");
+			}
+			if(largestType == 4){
+				return new Tuple(largestType,(boolean) resultTuple.value);
+			}//Then it equals 5
+			return new Tuple(largestType, (String) resultTuple.value);
+		}
+		float total = (float) Float.parseFloat(resultTuple.value.toString());
+
+		while(tokens.get(currentTokenindex).equals("multOp") && currentTokenindex < tokens.size() ){
+			int exponent = 1;
+			if (lexemes.get(currentTokenindex).equals("/")){
+				exponent = -1;
+			}
+			currentTokenindex++;//consumes a token
+
+			resultTuple = Factor();
+			result = resultTuple.maxType;
+
+
+			float numericalResult = (float) Float.parseFloat(resultTuple.value.toString());
 			if (result>largestType){
 				largestType = result;
 			}
-			/*Char and Bool and not be multiplied*/
-			if (largestType == 4 || largestType == 5){
-				if (tokens.get(currentTokenindex).equals("multOp")){
-					semanticError("Incompatible Operand for multOp");
-				}
-				if(largestType == 4){
-					return new Tuple(largestType,(boolean) resultTuple.value);
-				}//Then it equals 5
-				return new Tuple(largestType, (String) resultTuple.value);
-			}
-			float total = (float) Float.parseFloat(resultTuple.value.toString());
-
-			while(tokens.get(currentTokenindex).equals("multOp") && currentTokenindex < tokens.size() ){
-				int exponent = 1;
-				if (lexemes.get(currentTokenindex).equals("/")){
-					exponent = -1;
-				}
-				currentTokenindex++;//consumes a token
-
-				resultTuple = Factor();
-				result = resultTuple.maxType;
-
-
-	
-				float numericalResult = (float) Float.parseFloat(resultTuple.value.toString());
-				if (result>largestType){
-					largestType = result;
-				}
-				total = (float) (total * Math.pow(numericalResult , exponent));
-			} 
-			if(largestType == 1){
-				return new Tuple(largestType, (int) total);
-			} else{
-				return new Tuple(largestType, total);
-			}
+			total = (float) (total * Math.pow(numericalResult , exponent));
+		} 
+		if(largestType == 1){
+			return new Tuple(largestType, (int) total);
+		} else{
+			return new Tuple(largestType, total);
 		}
+	}
 
 
+	private Tuple Factor(){
+		if(tokens.get(currentTokenindex).equals("id")){
+			if(symTable.get(this.lexemes.get(currentTokenindex)) == null){
+				semanticError("Undefined Variable");
+			}
 
+			String type = symTable.get(this.lexemes.get(currentTokenindex)).type;
+			currentTokenindex++;
+			if (type.equals("int")){
+				return new Tuple(1,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+			} else if (type.equals("float")){
+				return new Tuple(2,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+			}else if (type.equals("bool")){
+				return new Tuple(4,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+			} else if (type.equals("char")){
+				return new Tuple(5, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
+			}
 
-		private Tuple Factor(){
-			if(tokens.get(currentTokenindex).equals("id")){
-				if(symTable.get(this.lexemes.get(currentTokenindex)) == null){
-					semanticError("Undefined Variable");
-				}
+		} else if ( tokens.get(currentTokenindex).equals("intLiteral")){
+			currentTokenindex++;
+			return new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
+		} else if (tokens.get(currentTokenindex).equals("boolLiteral")){
+			currentTokenindex++;
+			return new Tuple(4, (boolean) Boolean.parseBoolean(this.lexemes.get(currentTokenindex-1)));
+		} else if (tokens.get(currentTokenindex).equals("floatLiteral")){
+			currentTokenindex++;
+			return new Tuple(2, (float)  Float.parseFloat(this.lexemes.get(currentTokenindex-1)));
 
-				String type = symTable.get(this.lexemes.get(currentTokenindex)).type;
+		} else if ( tokens.get(currentTokenindex).equals("charLiteral")){
+			currentTokenindex++;
+			return new Tuple(5, (String) this.lexemes.get(currentTokenindex-1));
+		} else if(tokens.get(currentTokenindex).equals("(")) {
+			currentTokenindex++;
+			Tuple result = Expression();
+			if(tokens.get(currentTokenindex).equals(")")){
 				currentTokenindex++;
-				if (type.equals("int")){
-					//Tuple toReturn = new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
-					return new Tuple(1,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
-				} else if (type.equals("float")){
-					return new Tuple(2,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
-				}else if (type.equals("bool")){
-					return new Tuple(4,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
-				} else if (type.equals("char")){
-					return new Tuple(5, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
-				}
+				return result;
+			}else{
+				error();
+			}
+		}
+		return new Tuple(0, (int) 0 );
+	}
+	//------------------------------------------------------------------------------------------------------------------------------------------------------
+	private void print(){
+		System.out.println("Last Token Pointed To: " + currentTokenindex);
 
-			} else if ( tokens.get(currentTokenindex).equals("intLiteral")){
-				currentTokenindex++;
-				return new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
-			} else if (tokens.get(currentTokenindex).equals("boolLiteral")){
-				currentTokenindex++;
-				return new Tuple(4, (boolean) Boolean.parseBoolean(this.lexemes.get(currentTokenindex-1)));
-			} else if (tokens.get(currentTokenindex).equals("floatLiteral")){
-				currentTokenindex++;
-				return new Tuple(2, (float)  Float.parseFloat(this.lexemes.get(currentTokenindex-1)));
-
-			} else if ( tokens.get(currentTokenindex).equals("charLiteral")){
-				currentTokenindex++;
-				return new Tuple(5, (String) this.lexemes.get(currentTokenindex-1));
-			} else if(tokens.get(currentTokenindex).equals("(")) {
-				currentTokenindex++;
-				Tuple result = Expression();
-				if(tokens.get(currentTokenindex).equals(")")){
-					currentTokenindex++;
-					return result;
-				}else{
-					error();
-				}
-			}
-			return new Tuple(0, (int) 0 );
-		}
-//------------------------------------------------------------------------------------------------------------------------------------------------------
-		private void print(){
-			System.out.println("Last Token Pointed To: " + currentTokenindex);
-
-		}
-		//Grabs tokens from lexer
-		public void getTokensFromLexer(ArrayList<ArrayList<String>> tokens){
-			for (int i = 0; i < tokens.size(); i++){
-				//removes uneeded comments
-				if(!tokens.get(i).get(0).equals("comment")){
-					this.tokens.add(tokens.get(i).get(0));
-					this.lexemes.add(tokens.get(i).get(1));
-				}
-			}
-		}
-
-		//Called when an error is caught and reports where it occurred
-		private void error(){
-			if (!error){
-				error = true;
-				System.out.println("");
-				System.out.println("There was a syntax error on the " + (currentTokenindex +1) + "th token!");
-				if(!(currentTokenindex+1 >= tokens.size())){
-					System.out.println("Token: "+ tokens.get(currentTokenindex));
-				}
-				print();
-			}
-		}
-		//Called when a semantic error is caught 
-		private void semanticError(String type){
-			error = true;
-			System.out.println("");
-			System.out.println("There was a semantic error on the " + (currentTokenindex +1) + "th token!");
-			System.out.println("Type Error: " + type);
-			if(!(currentTokenindex+1 >= tokens.size())){
-				System.out.println("Lexeme: "+ lexemes.get(currentTokenindex));
-			}
-			print();
-			System.exit(0);
-		}
-		//Is called if there is syntax missing is a special case.
-		private void errorMissingSyntax(){
-			error = true;
-			System.out.println("");
-			System.out.println("Incomplete Statement: There is missing Syntax. ");
-			print();
-			System.exit(0);
-		}
-		//Only prints success when no errors are detected
-		private void sucess(){
-			System.out.println("");
-			if (currentTokenindex == tokens.size() && !error){
-				System.out.println("The syntax is correct!");
-				print();
-			}
-			System.exit(0);
-		}
-
-		//Grabs tokens from a file that has already been lexed
-		public void getTokensFromFile(String path){
-			String rawString = "";
-			//Read the lexed file
-			try {
-				rawString = new String(Files.readAllBytes(Paths.get(path)));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			//Removes the tab symbol from the document before further parsing 
-			String tabReplacedString = rawString.replaceAll("\\t", " ");
-			//removes comments from the file
-			String commentReplacedString = tabReplacedString.replaceAll("comment.*\\n", "");
-			//Removes the newline symbol from the document before further parsing 
-			String newLineReplacedString = commentReplacedString.replaceAll("\\n *", " ");
-			//Divides the document into tokens and lexemes
-			String[] tokens = newLineReplacedString.split("\\s+");
-			//Starts a 2 to strip out field labels if they are there
-			int start = 0;
-			if (tokens[0].equals("Tokens")){
-				start = 2;
-			}
-			//Adds only the tokens to an array
-			for(int i = start; i < tokens.length; i++){
-				//strips out empty strings
-				if (!tokens[i].equals("")){
-					this.tokens.add(tokens[i]);
-					i++;
-					this.lexemes.add(tokens[i]);
-				}
+	}
+	//Grabs tokens from lexer
+	public void getTokensFromLexer(ArrayList<ArrayList<String>> tokens){
+		for (int i = 0; i < tokens.size(); i++){
+			//removes uneeded comments
+			if(!tokens.get(i).get(0).equals("comment")){
+				this.tokens.add(tokens.get(i).get(0));
+				this.lexemes.add(tokens.get(i).get(1));
 			}
 		}
 	}
-	/*if (type.equals("int")){
-				//Tuple toReturn = new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
-			return new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
-			} else if (type.equals("float")){
-				return new Tuple(2, (float)  Float.parseFloat(this.lexemes.get(currentTokenindex-1)));
-			}else if (type.equals("bool")){
-				return new Tuple(4, (boolean) Boolean.parseBoolean(this.lexemes.get(currentTokenindex-1)));
-			} else if (type.equals("char")){
-				return new Tuple(5, (String) this.lexemes.get(currentTokenindex-1));
-			}*/
 
+	//Called when an error is caught and reports where it occurred
+	private void error(){
+		if (!error){
+			error = true;
+			System.out.println("");
+			System.out.println("There was a syntax error on the " + (currentTokenindex +1) + "th token!");
+			if(!(currentTokenindex+1 >= tokens.size())){
+				System.out.println("Token: "+ tokens.get(currentTokenindex));
+			}
+			print();
+		}
+	}
+	//Called when a semantic error is caught 
+	private void semanticError(String type){
+		error = true;
+		System.out.println("");
+		System.out.println("There was a semantic error on the " + (currentTokenindex +1) + "th token!");
+		System.out.println("Type Error: " + type);
+		if(!(currentTokenindex+1 >= tokens.size())){
+			System.out.println("Lexeme: "+ lexemes.get(currentTokenindex));
+		}
+		print();
+		System.exit(0);
+	}
+	//Is called if there is syntax missing is a special case.
+	private void errorMissingSyntax(){
+		error = true;
+		System.out.println("");
+		System.out.println("Incomplete Statement: There is missing Syntax. ");
+		print();
+		System.exit(0);
+	}
+	//Only prints success when no errors are detected
+	private void sucess(){
+		System.out.println("");
+		if (currentTokenindex == tokens.size() && !error){
+			System.out.println("The syntax is correct!");
+			print();
+		}
+		System.exit(0);
+	}
 
-	/* //Make sure expression is compatible with itself
-			 if((result == 4 && largestType != 4) || (result == 5 &&  largestType !=  5)){
-					semanticError("Incompatible mixed types in expression");
-				}*/
+	//Grabs tokens from a file that has already been lexed
+	public void getTokensFromFile(String path){
+		String rawString = "";
+		//Read the lexed file
+		try {
+			rawString = new String(Files.readAllBytes(Paths.get(path)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//Removes the tab symbol from the document before further parsing 
+		String tabReplacedString = rawString.replaceAll("\\t", " ");
+		//removes comments from the file
+		String commentReplacedString = tabReplacedString.replaceAll("comment.*\\n", "");
+		//Removes the newline symbol from the document before further parsing 
+		String newLineReplacedString = commentReplacedString.replaceAll("\\n *", " ");
+		//Divides the document into tokens and lexemes
+		String[] tokens = newLineReplacedString.split("\\s+");
+		//Starts a 2 to strip out field labels if they are there
+		int start = 0;
+		if (tokens[0].equals("Tokens")){
+			start = 2;
+		}
+		//Adds only the tokens to an array
+		for(int i = start; i < tokens.length; i++){
+			//strips out empty strings
+			if (!tokens[i].equals("")){
+				this.tokens.add(tokens[i]);
+				i++;
+				this.lexemes.add(tokens[i]);
+			}
+		}
+	}
+}

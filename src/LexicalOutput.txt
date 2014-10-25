@@ -32,6 +32,21 @@ intLiteral  23
 multOp      *
 intLiteral  2
 ;           ;
+id          r
+assignOp    =
+intLiteral  23
+multOp      *
+intLiteral  2
+;           ;
+id          hope
+assignOp    =
+id          x
+            !
+assignOp    =
+id          r
+multOp      *
+intLiteral  2
+;           ;
 id          n
 assignOp    =
 boolLiteral true
@@ -40,12 +55,8 @@ id          r
 assignOp    =
 intLiteral  10
 ;           ;
-id          hope
-assignOp    =
-id          x
-relOp       <=
-id          r
-;           ;
+comment     // hope = x <= r;
+
 id          nonsense
 assignOp    =
 id          r
@@ -102,13 +113,7 @@ id          hope
 return      return
 id          x
 ;           ;
-id          r
-assignOp    =
-id          r
-addOp       +
-floatLiteral 12.1
-;           ;
-comment     //Error here it doe snot catch this
+comment     //  r = r + 12.1;//Error here it doe snot catch this
 
 id          n
 assignOp    =
