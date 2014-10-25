@@ -152,6 +152,7 @@ public class LexicalParser {
 		for (int i = 0; i < tokens.size(); ++i){	
 			System.out.printf(" %s ", tokens.get(i).get(0)); 
 		}
+		System.out.println("");
 	}
 	/*
 	 *Sets up the dictionary that holds most of the lexeme 

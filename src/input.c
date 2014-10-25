@@ -1,59 +1,46 @@
 int main () {
+    //Declarations
+    int integer;
+    bool boolN;
+    char charChar;
+    float floatY;
+    int intR;
+    bool boolTruth;
+    float floater;
+    char laterInit;
+    float largeValue;
     
-    int x;
-    bool n;
-    char lol;
-    float yes;
-    int r;
-    bool hope;
+    //Initializations
+    integer = 200;
+    boolN = false;
+    charChar = 'N';
+    floatY = 12.12;
+    intR = 25;
+    boolTruth = true;
+    floater = 0.12;
+    largeValue = 4879.76;
+    //Statements
+    while (floatY < integer)
+        floatY = floatY + intR;
     
-    float nonsense;
-    x = 2;
-    r = 23*2+34;
-    //hope = x == r+2;
-    hope = true;
-    hope = hope == true;
-    n=true;
-    r=10;
-    // hope = x <= r;
-    nonsense = r * x;
-    yes = nonsense;
-    yes = nonsense * 12.1;
+    print floatY;
     
-    while (10<x)
-    x = x+1;
-    
-    //lol  = 'q';
-    //if (true)
-    
-    if (232 == 116*2 +1 -1)
-    yes = 22222;
+    if (floatY == 212 + floater)
+        print 'Y';
     else
-    yes = 111111;
+        print charChar;
     
-    //else
-   // r = 111111;
-    //r = 69999;
+    laterInit = charChar;
     
-   
-    print yes;
-    if (x < 3)
-    print 'w';
+    if( charChar == laterInit && boolN || floatY*23 + 1 == largeValue/2 + largeValue/2 )
+    print boolTruth;
+    else
+    print boolN;
     
-    n = true == n && true == hope || hope == false;
-    //lol = lol + 'h';
-    print false;
-    print x;
-    print false;
-    print n;
-    print lol;
-    print yes;
-    print r;
-    print hope;
-    return x;
-    //  r = r + 12.1;//Error here it doe snot catch this
-    n=true;//Double check for cathcing misisng ;
-    
-    
-    
+    if (floatY < intR < 1)
+        print floatY;
+    else
+        while (floatY > 50)
+            floatY = floatY - intR;
+    print floatY;
 }

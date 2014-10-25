@@ -18,9 +18,10 @@ public class SyntacticAnalysis {
 	private boolean error = false;
 	//If statement truth Flag
 	private boolean evaluateIfToTrue = true;
+	//While statement truth Flag
+	private boolean evaluateWhileToTrue = true;
 	//Tracks nested if statements
 	private int ifCount = 0;
-
 	//Create HashMap
 	private HashMap<String, Heterogeneous> symTable = new HashMap<String, Heterogeneous>();
 	//This method is called to start the syntactical analysis of the loaded tokens
@@ -29,7 +30,11 @@ public class SyntacticAnalysis {
 		if(currentTokenindex < tokens.size()) {error();}
 		sucess();
 	}
-
+	private final int INT = 1;
+	private final int FLOAT = 2;
+	private final int BOOL = 4;
+	private final int CHAR = 5;
+	
 
 	private void Program(){
 		//Makes sure the program has a closing brace
@@ -77,11 +82,9 @@ public class SyntacticAnalysis {
 				if (!error){
 					//checks to see if duplicate declaration
 					if(symTable.get(this.lexemes.get(currentTokenindex-2) ) != null){
-						semanticError("duplicate");
+						semanticError("Duplicate variable Identifier");
 					}
-
 				}
-
 				if (lexemes.get(currentTokenindex-3).equals("int")) {
 					Heterogeneous v = new Heterogeneous("int");
 					symTable.put(this.lexemes.get(currentTokenindex-2), v);
@@ -154,8 +157,9 @@ public class SyntacticAnalysis {
 				currentTokenindex++;
 				Tuple result = Expression();
 				semiColon();
-				if(evaluateIfToTrue){
-				System.out.print(result.value);
+				//If inside if or while only print when true
+				if(evaluateIfToTrue && evaluateWhileToTrue){
+				System.out.println(result.value);
 				}
 				return true;
 			}
@@ -175,15 +179,15 @@ public class SyntacticAnalysis {
 					currentTokenindex++;//consumes a token
 					if(i ==  1 ){
 						result = Expression();
-						if (result.maxType == 4){
-							if (Boolean.parseBoolean(result.value.toString()) ){//&& evaluateIfToTrue){
+						//If max type is boolean
+						if (result.maxType == BOOL){
+							if (Boolean.parseBoolean(result.value.toString()) ){
 								evaluateIfToTrue = true;
 							} else{
 								evaluateIfToTrue = false;
 							}
 						} else{semanticError("Expression can not be evaluated to a boolean");}
 							
-						
 					}if(i == 2 ){
 						Statement();
 						matchedIf = true;
@@ -212,7 +216,7 @@ public class SyntacticAnalysis {
 				}
 			} 
 		}
-		
+		//Prevents spurious reset when testing a statement to see if it is an if statement while inside a real if statement
 		ifCount--;
 		if(ifCount == 0){
 			evaluateIfToTrue = true;//Reset
@@ -224,35 +228,35 @@ public class SyntacticAnalysis {
 	private boolean WhileStmt(){
 		int repeatWhileExpression = 0;
 		int continueIndex = 0;
+		boolean firstRun = false;
 		if( currentTokenindex < tokens.size()){
 			if (tokens.get(currentTokenindex).equals("while")){
 				currentTokenindex++;
 				if (tokens.get(currentTokenindex).equals("(")){
 					currentTokenindex++;
 					 repeatWhileExpression = currentTokenindex;
-					Expression();
+					firstRun = (boolean) Expression().value;
 					if (tokens.get(currentTokenindex).equals(")")){
 						currentTokenindex++;
 						int current = currentTokenindex;
+						if(!firstRun){
+							evaluateWhileToTrue = false;
+						}
 						Statement();
+						evaluateWhileToTrue = true;
 						continueIndex = currentTokenindex;
 						//checks to make sure there was a valid statement
 						if(current == currentTokenindex){ error();}
 					}else{error();}
 				}else{error();}
-				
-				
+				//It is a syntactically valid while statement. Now run it to evaluate outcome:
 				currentTokenindex = repeatWhileExpression;
-				//it is a syntactically valid while statement. Now run it:
 				while((boolean) Expression().value){
-					System.out.println("trough");
 					currentTokenindex++;
 					Statement();
 				currentTokenindex = repeatWhileExpression;
 				}
 				currentTokenindex = continueIndex;
-				
-				
 				return true;
 			}
 		}
@@ -282,27 +286,25 @@ public class SyntacticAnalysis {
 			assignOp();
 			Tuple result =  Expression();
 			convertFrom = result.maxType;
-			if(convertTo == 4 &&  convertFrom != 4){
+			if(convertTo == BOOL &&  convertFrom != BOOL){
 				semanticError("Narrowing Conversion is not allowed");
-			} else if (convertTo == 5 &&  convertFrom !=  5){
+			} else if (convertTo == CHAR &&  convertFrom !=  CHAR){
 				semanticError("Narrowing Conversion is not allowed");
 			}
 			else if (convertFrom > convertTo){
 				semanticError("Narrowing Conversion is not allowed");
 			}
 			semiColon();
-			if(!error && evaluateIfToTrue){
+			if(!error && evaluateIfToTrue && evaluateWhileToTrue){
 				switch (convertTo) {
-				case 1: 
+				case INT: 
 					this.symTable.get(varName).value = (int) result.value;
 					break;
-
-				case 2:  this.symTable.get(varName).value = Float.parseFloat(result.value.toString());
+				case FLOAT:  this.symTable.get(varName).value = Float.parseFloat(result.value.toString());
 				break;
-				case 4:  this.symTable.get(varName).value = (boolean) result.value;
-				//this.symTable.get(varName).value = Boolean.parseBoolean(result.value.toString());
+				case BOOL:  this.symTable.get(varName).value = (boolean) result.value;
 				break;
-				case 5:  this.symTable.get(varName).value = (String) result.value;
+				case CHAR:  this.symTable.get(varName).value = (String) result.value;
 				break;
 				}
 
@@ -313,7 +315,6 @@ public class SyntacticAnalysis {
 	private void semiColon(){
 		if(tokens.get(currentTokenindex).equals(";")){
 			currentTokenindex++;//consumes a token
-
 			return;
 		}else{
 			error();
@@ -329,13 +330,13 @@ public class SyntacticAnalysis {
 			currentTokenindex++;//consumes a token
 
 			if (type.equals("int")){
-				return new Tuple(1,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+				return new Tuple(INT,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("float")){
-				return new Tuple(2,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+				return new Tuple(FLOAT,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			}else if (type.equals("bool")){
-				return new Tuple(4,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+				return new Tuple(BOOL,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("char")){
-				return new Tuple(5, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
+				return new Tuple(CHAR, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
 			}
 		} else{
 			error();
@@ -364,7 +365,7 @@ public class SyntacticAnalysis {
 		largestType = result.maxType;
 		if(tokens.get(currentTokenindex).equals("||")){
 			quickReturn = false;
-			if(result.maxType == 4){
+			if(result.maxType == BOOL){
 				if (Boolean.parseBoolean(result.value.toString())){
 					returnValue = true;
 				}
@@ -373,10 +374,10 @@ public class SyntacticAnalysis {
 		while(tokens.get(currentTokenindex).equals("||") && currentTokenindex < tokens.size() ){
 			
 			currentTokenindex++;//consumes a token
-			largestType = 4;
+			largestType = BOOL;
 			 result = Conjunction();
 		
-			if(result.maxType == 4){
+			if(result.maxType == BOOL){
 				if (Boolean.parseBoolean(result.value.toString())){
 					returnValue = true;
 				}
@@ -406,17 +407,17 @@ boolean quickReturn = true;
 		largestType = result.maxType;
 if(tokens.get(currentTokenindex).equals("&&")){
 	quickReturn = false;
-		if(result.maxType == 4){
+		if(result.maxType == BOOL){
 			if (!Boolean.parseBoolean(result.value.toString())){
 				returnValue = false;
 			}}else{semanticError("Expression can not be evaluated to a boolean");}
 		}
 		while(tokens.get(currentTokenindex).equals("&&") && currentTokenindex < tokens.size() ){
 			currentTokenindex++;//consumes a token
-			largestType = 4;
+			largestType = BOOL;
 			 result = Equality();
 		
-			if(result.maxType == 4){
+			if(result.maxType == BOOL){
 				if (!Boolean.parseBoolean(result.value.toString())){
 					returnValue = false;
 
@@ -435,11 +436,8 @@ if(tokens.get(currentTokenindex).equals("&&")){
 		return new Tuple(largestType, result.value );
 	}
 
-	//Todo make this handle more than two comparisions
 	private Tuple Equality(){
-
 		boolean truth = false;
-
 		int largestType = 0;
 		Tuple resultTuple = Relation();
 		int result = resultTuple.maxType;
@@ -447,14 +445,17 @@ if(tokens.get(currentTokenindex).equals("&&")){
 		int firstType = result;
 		int secondType = 0;
 		boolean returnTruthValue = false;
+		boolean equals  = false;
 
 
 		String total = resultTuple.value.toString();
-
+		if(lexemes.get(currentTokenindex).equals("==")){
+			equals = true;
+		}
 		while(tokens.get(currentTokenindex).equals("equOp") && currentTokenindex < tokens.size() ){
 			total = resultTuple.value.toString();
 			currentTokenindex++;//consumes a token
-			largestType = 4;//because it has to be a boolean
+			largestType = BOOL;//because it has to be a boolean
 			resultTuple = Relation();
 
 			secondType= resultTuple.maxType;
@@ -462,24 +463,24 @@ if(tokens.get(currentTokenindex).equals("&&")){
 			returnTruthValue = true;
 			//test for two type compatiability
 
-			if ((firstType == 4) && (secondType == 4)){
+			if ((firstType == BOOL) && (secondType == BOOL)){
 				evaluation =  Boolean.parseBoolean(total) == Boolean.parseBoolean(resultTuple.value.toString());
-			} else if ((firstType == 5) && (secondType == 5)){
+			} else if ((firstType == CHAR) && (secondType == CHAR)){
 				evaluation = total == resultTuple.value.toString();
-			} else if  ((firstType <= 2) && (secondType <= 2)){
+			} else if  ((firstType <= FLOAT) && (secondType <= FLOAT)){
 				evaluation =  (float) Float.parseFloat(total) == (float) Float.parseFloat(resultTuple.value.toString());
 			} else{
 				semanticError("Incompatible type comparison");
 			}
 
 			if (evaluation){
-				if(lexemes.get(currentTokenindex - 2).equals("==")){
+				if(equals){
 					truth = true;
 				} else{
 					truth = false;
 				}
 			} else{
-				if(lexemes.get(currentTokenindex - 2).equals("!=")){
+				if(!equals){
 					truth = true;
 				} else{
 					truth = false;
@@ -516,42 +517,44 @@ if(tokens.get(currentTokenindex).equals("&&")){
 		int largestType = 0;
 		Tuple resultTuple = Addition();
 		int result = resultTuple.maxType;
+		int indexofOperator = 0;
 
 		if (result>largestType){
 			largestType = result;
 		}
 		//Char and Bool can not be compared
-		if (largestType == 4 || largestType == 5){
+		if (largestType == BOOL || largestType == CHAR){
 			if (tokens.get(currentTokenindex).equals("relOp")){
 				semanticError("Incompatible Operand for relOp");
 			}
-			if(largestType == 4){
+			if(largestType == BOOL){
 				return new Tuple(largestType,(boolean) resultTuple.value);
-			} else if(largestType == 5){
+			} else if(largestType == CHAR){
 				return new Tuple(largestType, (String) resultTuple.value);
 			}
 		}
 		//If int or float and there is no relative operator
-		if ( largestType == 1 && !tokens.get(currentTokenindex).equals("relOp")){
+		if ( largestType == INT && !tokens.get(currentTokenindex).equals("relOp")){
 			return new Tuple(largestType,(int) resultTuple.value);
-		} else if (largestType == 2 && !tokens.get(currentTokenindex).equals("relOp")){
+		} else if (largestType == FLOAT && !tokens.get(currentTokenindex).equals("relOp")){
 
 			return new Tuple(largestType,(float) Float.parseFloat(resultTuple.value.toString()));
 		}
 
 		float total = (float) Float.parseFloat(resultTuple.value.toString());
 		while(tokens.get(currentTokenindex).equals("relOp") && currentTokenindex < tokens.size() ){
+			indexofOperator = currentTokenindex;
 			currentTokenindex++;//consumes a token
 
 			resultTuple = Addition();
 			float numericalResult = Float.parseFloat(resultTuple.value.toString());
 			if(lexemes.get(currentTokenindex - 2).equals("<")){
 				evaluation =  total < numericalResult;
-			} else if (lexemes.get(currentTokenindex - 2).equals(">")){
+			} else if (lexemes.get(indexofOperator).equals(">")){
 				evaluation =  total > numericalResult;
-			} else if (lexemes.get(currentTokenindex - 2 ).equals("<=")){
+			} else if (lexemes.get(indexofOperator).equals("<=")){
 				evaluation =  total <= numericalResult;
-			}else if (lexemes.get(currentTokenindex - 2).equals(">=")){
+			}else if (lexemes.get(indexofOperator).equals(">=")){
 				evaluation =  total >= numericalResult;
 			}
 			//pass the value along for the next comparison
@@ -559,9 +562,9 @@ if(tokens.get(currentTokenindex).equals("&&")){
 		}
 
 		if(evaluation){
-			return new Tuple(4, (boolean) true);
+			return new Tuple(BOOL, (boolean) true);
 		} else{
-			return new Tuple(4, (boolean) false);
+			return new Tuple(BOOL, (boolean) false);
 		}
 	}
 
@@ -574,13 +577,13 @@ if(tokens.get(currentTokenindex).equals("&&")){
 			largestType = result;
 		}
 		/*Char and Bool and not be added or subtracted*/
-		if (largestType == 4 || largestType == 5){
+		if (largestType == BOOL || largestType == CHAR){
 			if (tokens.get(currentTokenindex).equals("addOp")){
 				semanticError("Incompatible Operand for addOp");
 			}
-			if(largestType == 4){
+			if(largestType == BOOL){
 				return new Tuple(largestType,(boolean) resultTuple.value);
-			}//Then it equals 5
+			}//Then it equals CHAR
 			return new Tuple(largestType, (String) resultTuple.value);
 		}
 		float total = (float) Float.parseFloat(resultTuple.value.toString());
@@ -599,7 +602,7 @@ if(tokens.get(currentTokenindex).equals("&&")){
 			}
 			total = (float) (total + (sign*numericalResult));
 		} 
-		if(largestType == 1){
+		if(largestType == INT){
 			return new Tuple(largestType, (int) total);
 		} else{
 			return new Tuple(largestType, total);
@@ -617,11 +620,11 @@ if(tokens.get(currentTokenindex).equals("&&")){
 			largestType = result;
 		}
 		/*Char and Bool and not be multiplied*/
-		if (largestType == 4 || largestType == 5){
+		if (largestType == BOOL || largestType == CHAR){
 			if (tokens.get(currentTokenindex).equals("multOp")){
 				semanticError("Incompatible Operand for multOp");
 			}
-			if(largestType == 4){
+			if(largestType == BOOL){
 				return new Tuple(largestType,(boolean) resultTuple.value);
 			}//Then it equals 5
 			return new Tuple(largestType, (String) resultTuple.value);
@@ -645,7 +648,7 @@ if(tokens.get(currentTokenindex).equals("&&")){
 			}
 			total = (float) (total * Math.pow(numericalResult , exponent));
 		} 
-		if(largestType == 1){
+		if(largestType == INT){
 			return new Tuple(largestType, (int) total);
 		} else{
 			return new Tuple(largestType, total);
@@ -662,28 +665,28 @@ if(tokens.get(currentTokenindex).equals("&&")){
 			String type = symTable.get(this.lexemes.get(currentTokenindex)).type;
 			currentTokenindex++;
 			if (type.equals("int")){
-				return new Tuple(1,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+				return new Tuple(INT,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("float")){
-				return new Tuple(2,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+				return new Tuple(FLOAT,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			}else if (type.equals("bool")){
-				return new Tuple(4,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
+				return new Tuple(BOOL,  symTable.get(this.lexemes.get(currentTokenindex-1)).value );
 			} else if (type.equals("char")){
-				return new Tuple(5, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
+				return new Tuple(CHAR, symTable.get(this.lexemes.get(currentTokenindex-1)).value);
 			}
 
 		} else if ( tokens.get(currentTokenindex).equals("intLiteral")){
 			currentTokenindex++;
-			return new Tuple(1, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
+			return new Tuple(INT, (int)  Integer.parseInt(this.lexemes.get(currentTokenindex-1)));
 		} else if (tokens.get(currentTokenindex).equals("boolLiteral")){
 			currentTokenindex++;
-			return new Tuple(4, (boolean) Boolean.parseBoolean(this.lexemes.get(currentTokenindex-1)));
+			return new Tuple(BOOL, (boolean) Boolean.parseBoolean(this.lexemes.get(currentTokenindex-1)));
 		} else if (tokens.get(currentTokenindex).equals("floatLiteral")){
 			currentTokenindex++;
-			return new Tuple(2, (float)  Float.parseFloat(this.lexemes.get(currentTokenindex-1)));
+			return new Tuple(FLOAT, (float)  Float.parseFloat(this.lexemes.get(currentTokenindex-1)));
 
 		} else if ( tokens.get(currentTokenindex).equals("charLiteral")){
 			currentTokenindex++;
-			return new Tuple(5, (String) this.lexemes.get(currentTokenindex-1));
+			return new Tuple(CHAR, (String) this.lexemes.get(currentTokenindex-1));
 		} else if(tokens.get(currentTokenindex).equals("(")) {
 			currentTokenindex++;
 			Tuple result = Expression();
@@ -704,7 +707,7 @@ if(tokens.get(currentTokenindex).equals("&&")){
 	//Grabs tokens from lexer
 	public void getTokensFromLexer(ArrayList<ArrayList<String>> tokens){
 		for (int i = 0; i < tokens.size(); i++){
-			//removes uneeded comments
+			//removes  comments
 			if(!tokens.get(i).get(0).equals("comment")){
 				this.tokens.add(tokens.get(i).get(0));
 				this.lexemes.add(tokens.get(i).get(1));
@@ -748,8 +751,7 @@ if(tokens.get(currentTokenindex).equals("&&")){
 	private void sucess(){
 		System.out.println("");
 		if (currentTokenindex == tokens.size() && !error){
-			System.out.println("The syntax is correct!");
-			print();
+			System.out.println("The syntax and semantics are correct!");
 		}
 		System.exit(0);
 	}

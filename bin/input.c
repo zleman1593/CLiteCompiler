@@ -1,22 +1,22 @@
 int main () {
-
-int x;
-bool n;
-float yes;
-int r;
-if (true == n)
-	print yes;
-n = r;
-print false;
-if (24 > n)//What is this???
-	print n;
-while(true)
-	n = n + 1;
-if (32-10<x || xcv < ety)
-	x = 10;
-	r = 12;
-	print x + r;
-	sd = (67);
-
-return x;
+    //Declarations
+    int integer;
+    bool boolN;
+    char charChar;
+    float floatY;
+    int intR;
+    bool boolTruth;
+    
+    //Initializations
+    integer = 200;
+    boolN = false;
+    charChar = 'R';
+    floatY = 12.12;
+    intR = 25;
+    boolTruth = true;
+    
+    while (floatY < integer)
+    floatY = floatY + intR;
+    
+    print floatY;
 }
